@@ -1,8 +1,21 @@
 const fs = require('node:fs');
-const { Client, Intents, Collection } = require("discord.js");
+const { Client, GatewayIntentBits, Collection } = require("discord.js");
 require("dotenv").config();
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const client = new Client({ 
+    intents: [
+        GatewayIntentBits.Guilds, 
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildEmojisAndStickers,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.DirectMessageTyping,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildScheduledEvents,
+        GatewayIntentBits.AutoModerationConfiguration
+    ] 
+});
 
 client.commands = new Collection();
 
@@ -36,17 +49,6 @@ client.on('messageCreate', message => {
             break;
         case 'headpats':
             client.commands.get('headpats').execute(message, args);
-            break;
-        case 'list':
-            client.commands.get('list').execute(message, args);
-            break;
-        case 'cats':
-            client.commands.get('cats').execute(message, args);
-            break;
-        case 'dogs':
-            client.commands.get('dogs').execute(message, args);
-            break;
-        default:
             break;
     } 
 });

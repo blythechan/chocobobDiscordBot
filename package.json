@@ -4,19 +4,23 @@
   "description": "FFXIV bot assistant",
   "main": "chocoboStall.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node .",
+    "production": "NODE_ENV=production&&npm start",
+    "development": "set NODE_ENV=development&&npm start"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tolliverk/chocobobDiscordBot.git"
   },
-  "author": "",
+  "author": "Blythe Bleethe#6060",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/tolliverk/chocobobDiscordBot/issues"
   },
   "homepage": "https://github.com/tolliverk/chocobobDiscordBot#readme",
   "dependencies": {
-    "discord.js": "^14.7.1"
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3"
   }
 }
