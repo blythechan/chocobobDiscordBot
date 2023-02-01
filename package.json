@@ -1,0 +1,22 @@
+{
+  "name": "chocobobdiscordbot",
+  "version": "1.0.0",
+  "description": "FFXIV bot assistant",
+  "main": "chocoboStall.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tolliverk/chocobobDiscordBot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tolliverk/chocobobDiscordBot/issues"
+  },
+  "homepage": "https://github.com/tolliverk/chocobobDiscordBot#readme",
+  "dependencies": {
+    "discord.js": "^14.7.1"
+  }
+}
