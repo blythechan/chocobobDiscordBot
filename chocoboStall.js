@@ -5,12 +5,14 @@ const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
 const { FFXIV_API_KEY, DISCORD_TOKEN, PREFIX } = require("dotenv").config();
 
-const XIVAPI = require('@xivapi/js');
-const xiv = new XIVAPI({
-    private_key: FFXIV_API_KEY,
-    language: 'en',
-    snake_case: true
-});
+const options = {
+	bypass: true,
+	log: true,
+	paths: [
+	  'bot', 'economy', 'freeCompany',
+	  'fun'
+	]
+  };
 
 const client = new Client({ 
     intents: [
@@ -26,27 +28,31 @@ const client = new Client({
         GatewayIntentBits.AutoModerationConfiguration
     ] 
 });
-
+//client.application.commands.set([])
+/// Commands
 client.commands = new Collection();
-
 const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file);
-	const command = require(filePath);
-	// Set a new item in the Collection with the key as the command name and the value as the exported module
-	if ('data' in command && 'execute' in command) {
-		client.commands.set(command.data.name, command);
-	} else {
-		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+const commandFolders = fs.readdirSync(`${commandsPath}`);
+for(const folder of commandFolders) {
+	const commandFiles = fs.readdirSync(`${commandsPath}/${folder}`).filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const filePath = path.join(commandsPath, folder, file);
+		const command = require(filePath);
+		// Set a new item in the Collection with the key as the command name and the value as the exported module
+		if ('data' in command && 'execute' in command) {
+			client.commands.set(command.data.name, command);
+		} else {
+			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
 	}
 }
 
 client.once("ready", () => {
+    console.log('```````````````````````````````````````````````````````````````````````````````````');
     console.log(`Logged in as ${client.user.tag}!`);
-    const Guilds = client.guilds.cache.map(guild => guild.id);
-    console.log(Guilds);
+    console.log('```````````````````````````````````````````````````````````````````````````````````');
+    //const Guilds = client.guilds.cache.map(guild => guild.id);
+    //console.log(Guilds);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
