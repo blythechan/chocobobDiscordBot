@@ -1,13 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-    name: 'ping',
-    description: "Check latency between client and bot.",
-    args: false,
-    alias: ['pong', 'ping'],
-    execute(message, args){
-        if(message.content === "&ping") {
-            message.channel.send(`:ping_pong: Pong`);
-        } else  {
-            message.channel.send('Ping :ping_pong:');
-        }
-    }
-}
+	data: new SlashCommandBuilder()
+		.setName('ping')
+		.setDescription('Check latency between client and bot.'),
+	async execute(interaction) {
+		await interaction.reply(`:ping_pong: Client and Bot Relationship Latency is ${Date.now() - interaction.createdTimestamp}ms :ping_pong:`);
+	},
+};

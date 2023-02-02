@@ -1,11 +1,10 @@
+const { SlashCommandBuilder } = require('discord.js');
+
 module.exports = {
-    name: 'headpats',
-    description: "Praise Chocobob with a head pat.",
-    args: false,
-    alias: ['headpat', 'headpats'],
-    execute(message, args){
-        if (message.content === "&headpats" || message.content === "&headpat")
-            message.channel.send(`T-Thank you, kweh~ :pleading_face::heart:`);
-        
-    }
-}
+	data: new SlashCommandBuilder()
+		.setName('headpats')
+		.setDescription('Praise Chocobob with a head pat.'),
+	async execute(interaction) {
+		await interaction.reply(`T-Thank you, ${interaction.user.username} kweh~ :pleading_face::heart:`);
+	},
+};

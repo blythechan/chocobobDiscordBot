@@ -1,6 +1,16 @@
+/// Command handling
 const fs = require('node:fs');
-const { Client, GatewayIntentBits, Collection } = require("discord.js");
-require("dotenv").config();
+const path = require('node:path');
+
+const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
+const { FFXIV_API_KEY, DISCORD_TOKEN, PREFIX } = require("dotenv").config();
+
+const XIVAPI = require('@xivapi/js');
+const xiv = new XIVAPI({
+    private_key: FFXIV_API_KEY,
+    language: 'en',
+    snake_case: true
+});
 
 const client = new Client({ 
     intents: [
@@ -19,39 +29,42 @@ const client = new Client({
 
 client.commands = new Collection();
 
-const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
-/// Command prefix
-const p = process.env.PREFIX;
-
-for(const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-
-    client.commands.set(command.name, command);
+for (const file of commandFiles) {
+	const filePath = path.join(commandsPath, file);
+	const command = require(filePath);
+	// Set a new item in the Collection with the key as the command name and the value as the exported module
+	if ('data' in command && 'execute' in command) {
+		client.commands.set(command.data.name, command);
+	} else {
+		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+	}
 }
+
 client.once("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    const Guilds = client.guilds.cache.map(guild => guild.id);
+    console.log(Guilds);
 });
 
-client.on('messageCreate', message => {
-    if(!message.content.startsWith(p) || message.author.bot) return;
+client.on(Events.InteractionCreate, async interaction => {
+	if (!interaction.isChatInputCommand()) return;
 
-    // Remove prefix and for to lower case
-    const args = message.content.slice(p.length).split(/ +/);
-    const command = args.shift().toLowerCase();
+	const command = interaction.client.commands.get(interaction.commandName);
 
-    switch(command) {
-        case 'ping':
-            client.commands.get('ping').execute(message, args);
-            break;
-        case 'pong':
-            client.commands.get('ping').execute(message, args);
-            break;
-        case 'headpats':
-            client.commands.get('headpats').execute(message, args);
-            break;
-    } 
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName} was found.`);
+		return;
+	}
+
+	try {
+		await command.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
 });
 
-
-client.login(process.env.DISCORD_TOKEN);
+client.login(DISCORD_TOKEN);

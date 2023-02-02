@@ -20,7 +20,10 @@
   },
   "homepage": "https://github.com/tolliverk/chocobobDiscordBot#readme",
   "dependencies": {
+    "@xivapi/js": "^0.4.1",
     "discord.js": "^14.7.1",
+    "discordjs-button-pagination": "^3.0.1",
+    "discordjs-paginate": "^0.0.7-bunnygirl",
     "dotenv": "^16.0.3"
   }
 }
