@@ -34,20 +34,20 @@ module.exports = {
 		.setName('fcstats')
 		.setDescription('Retrieve FC statistics')
             .addStringOption(option => option.setName('fc').setDescription('The Free Company full name to request statistics from').setRequired(true))
-            .addStringOption(option => option.setName('server').setDescription('The Free Company full name to request statistics from').setRequired(true))
-            .addBooleanOption(option => option.setName('secret').setDescription('Whether or not the response should be viewable by you only').setRequired(true)),
+            .addStringOption(option => option.setName('server').setDescription('The Free Company full name to request statistics from').setRequired(true)),
 	async execute(interaction) {
         await interaction.deferReply();
         const fc = interaction.options.getString('fc');
         const fcServer = interaction.options.getString('server');
-        const secret = interaction.options.getBoolean('secret') ?? false;
 		//find the FC with its name and server
-        let res = await xiv.freecompany.search(fc, {server: fcServer})
+        let res = await xiv.freecompany.search(fc, {server: fcServer});
+        console.log(res);
         //get the FC ID
         let id = res.results[0].id;
         //get and return fc members
         let userFC = await xiv.freecompany.get(id, {data: 'FCM'});
         const fcm = userFC.free_company_members;
+        console.log(fcm);
         // const slicedFCM = fcm.slice(0, 25);
 		// console.log(slicedFCM);
         // slicedFCM.forEach(item => {
@@ -56,50 +56,6 @@ module.exports = {
         //         value: item.rank
         //     })
         // });
-
-
-
-
-        for(let send = 0; send < fcm.length; send += 10) {
-            let tosend;
-            // size the embeds to max 10
-            if((fcm.length - send) < 2) {
-                console.log("first:",send)
-                tosend = fcm.slice(send, fcm.length);
-                console.log("first still:",tosend)
-            }
-            else {
-                console.log("second:",send)
-                tosend = fcm.slice(send, fcm);
-                console.log("second still:",tosend)
-            }
-            const embeds = [];
-            for(const item of tosend) {
-                embeds.push({
-                    title: item.title,
-                    url: item.link,
-                    fields: [
-                        {
-                            name: 'Description',
-                            value: item.name
-                        }
-                    ],
-                    thumbnail: {
-                        url: item.rank_icon
-                    },
-                    image: {
-                        url: item.avatar
-                    },
-                    footer: {
-                        text: `Lodestone ID ${item.id}`
-                    }
-                });
-            }
-            await interaction.followUp({ embeds: [exampleEmbed], ephemeral: secret})
-        }
-
-
-
-        
+            await interaction.followUp(`Test.`)
 	},
 };

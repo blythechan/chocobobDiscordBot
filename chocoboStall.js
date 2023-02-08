@@ -1,4 +1,8 @@
-/// Command handling
+/**
+ * Author: Blythe Bleethe#6060
+ * Purpose: Chocobob shall provide statistics, logs, and other data pertaining to FFXIV upon request. It will require administrative privlege to be able to read
+ * 		messages/message history, assist in role verification, and character verification via Lodestone. 
+ */
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -28,9 +32,10 @@ const client = new Client({
         GatewayIntentBits.AutoModerationConfiguration
     ] 
 });
-//client.application.commands.set([])
+
 /// Commands
 client.commands = new Collection();
+// client.commands.set([]);
 const commandsPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(`${commandsPath}`);
 for(const folder of commandFolders) {
