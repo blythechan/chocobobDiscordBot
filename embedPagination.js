@@ -1,104 +1,51 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { MessageEmbed } = require('discord.js');
-const pagination = require('@koenie06/discord.js-pagination');
 
-module.exports = {
-	data: new SlashCommandBuilder()
-		.setName('help')
-		.setDescription('Shows the ping of the bot.')
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('button')
-                .setDescription('Display\'s the help cmd with button paginator'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('emoji')
-                .setDescription('Display\'s the help cmd with emoji paginator'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('menu')
-                .setDescription('Display\'s the help cmd with menu paginator')),
-	async execute(interaction) {
-		
-        /* Getting the subcommand that has been picked */
-        const subcommand = interaction.options.getSubcommand();
+const { Client, GatewayIntentBits, Collection, AttachmentBuilder, SlashCommandBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Embed } = require("discord.js");
+const paginationEmbed = require('discordjs-v14-pagination');
 
-        /* Making all help pages (MessageEmbed's) where the paginator will be used for */
-        const embed1 = new MessageEmbed().setTitle(`This is the first help page!`);
-        const embed2 = new MessageEmbed().setTitle(`This is the second help page!`);
-        const embed3 = new MessageEmbed().setTitle(`This is the third help page!`);
-        const embeds = [embed1, embed2, embed3];
+const firstPageButton = new ButtonBuilder()
+    .setCustomId('first')
+    .setEmoji('1029435230668476476')
+    .setStyle(ButtonStyle.Primary);
 
-        /* If the user picked the subcommand 'button', activate the button paginator! */
-        if(subcommand === 'button') {
+const previousPageButton = new ButtonBuilder()
+    .setCustomId('previous')
+    .setEmoji('1029435199462834207')
+    .setStyle(ButtonStyle.Primary);
 
-            /* Get more info about how the button paginator works at https://npmjs.com/package/@koenie06/discord.js-pagination */
-            pagination.button({
-                interaction: interaction,
-                pages: embeds,
-                timeout: 30000,
-                buttons: {
-                    previous: {
-                        label: 'Click to view the previous page',
-                        style: 'SUCCESS',
-                        emoji: '⏮'
-                    },
-                    next: {
-                        label: 'Click to view the next page',
-                        style: 'SUCCESS',
-                        emoji: '⏭'
-                    },
-                    stop: {
-                        label: 'Click here to stop',
-                        style: 'DANGER',
-                        emoji: '❌'
-                    },
-                },
-            });
-            
-        } else if(subcommand === 'emoji') {
+const nextPageButton = new ButtonBuilder()
+    .setCustomId('next')
+    .setEmoji('1029435213157240892')
+    .setStyle(ButtonStyle.Primary);
 
-            /* Get more info about how the emoji paginator works at https://npmjs.com/package/@koenie06/discord.js-pagination */
-            pagination.emoji({
-                interaction: interaction,
-                pages: embeds,
-                timeout: 30000,
-                emojis: {
-                    previous: '⏮',
-                    next: '⏭',
-                    stop: '❌'
-                },
-            });
+const lastPageButton = new ButtonBuilder()
+    .setCustomId('last')
+    .setEmoji('1029435238948032582')
+    .setStyle(ButtonStyle.Primary);
 
-        } else {
+const buttons = [ firstPageButton, previousPageButton, nextPageButton, lastPageButton ];
 
-            /* Get more info about how the menu paginator works at https://npmjs.com/package/@koenie06/discord.js-pagination */
-            pagination.menu({
-                interaction: interaction,
-                timeout: 30000,
-                menus: {
-                    placeHolder: 'Click here to select a page!',
-                    pages: [{
-                        embed: embed1,
-                        value: 'Page 1',
-                        label: 'Page 1',
-                        description: 'Click here to select the first page'
-                    },
-                    {
-                        embed: embed2,
-                        value: 'Page 2',
-                        label: 'Page 2',
-                        description: 'Click here to select the second page'
-                    },
-                    {
-                        embed: embed3,
-                        value: 'Page 3',
-                        label: 'Page 3',
-                        description: 'Click here to select the third page'
-                    }],
-                },
-            });
+const color = "#f2f28a";
 
-        };
-	},
-};
+function createEmbedPages(data, title, image) {
+    const pageSize = 25;
+    const pageCount = Math.ceil(data.length / pageSize);
+    const embeds = [];
+    for (let i = 0; i < pageCount; i++) {
+        const start = i * pageSize;
+        const end = start + pageSize;
+        const pageData = data.slice(start, end);
+        const embed = new EmbedBuilder()
+            .setColor(color)
+            .setTitle(`${title} Page ${i + 1}/${pageCount}`)
+            .setDescription(pageData.join('\n'))
+            .setImage(image);
+        embeds.push(embed);
+    }
+
+    return embeds;
+}
+
+function embedPagination(interaction, data, title, image) {
+    const embeds = createEmbedPages(data, color, title, image);
+    paginationEmbed(interaction, embeds, buttons, timeout);
+}

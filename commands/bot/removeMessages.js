@@ -27,7 +27,7 @@ module.exports = {
                             .catch();
                     }).catch(error => {
                         console.log(`Failed to delete: ${error}`);
-                        return interaction.reply(`An error occurred.`);
+                        return interaction.editReply(`An error occurred.`);
                     })
                 }
             }).catch(error => {
