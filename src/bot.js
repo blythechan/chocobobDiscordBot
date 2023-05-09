@@ -20,7 +20,7 @@ const client = new Client({
 
 client.commands = new Collection();
 client.commandArray = [];
-client.colour = "yellow";
+client.color = "yellow";
 
 /** FUNCTIONS */
 const functionFolders = fs.readdirSync(`./src/functions`);

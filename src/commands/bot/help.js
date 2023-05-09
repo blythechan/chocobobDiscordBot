@@ -11,6 +11,9 @@ const Paginate = require('discordjs-paginate');
             { name: 'Ping', value: 'Command `/ping`' },
             { name: ' ', value: 'Checks and displays latency between bot and client.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: 'Poll', value: 'Command `/poll description emoteA emoteB emoteC emoteD`' },
+            { name: ' ', value: 'Requires the user to be a server administrator. Creates a message with preset reactions.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
             { name: 'Purge Messages', value: 'Command `/purge user`' },
             { name: ' ', value: 'Removes up to 100 messages within the last 14 days on the current text-channel. User can be selected by the command itself. It is possible to select Chocobob. Success message will disappear after 10 seconds.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
@@ -46,7 +49,7 @@ const Paginate = require('discordjs-paginate');
             { name: 'Head Pats', value: 'Command `/headpats`' },
             { name: ' ', value: 'Makes Chocobob blush and feel loved for all his hard work.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
-            { name: 'Matchmaker', value: 'Command `/ship shipUserA shipUserB`' },
+            { name: 'Ship', value: 'Command `/ship shipUserA shipUserB`' },
             { name: ' ', value: 'Jokingly determines a percentage of possibility between two users.' },
             { name: ' ', value: 'Status: :white_check_mark:' }
         );
