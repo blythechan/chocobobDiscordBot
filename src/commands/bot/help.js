@@ -1,12 +1,11 @@
-const { Client, GatewayIntentBits, Collection, SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const Paginate = require('discordjs-paginate');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 
     const COLOR = "#efde7a";
 
     const BOT_EMBED = new EmbedBuilder()
         .setTitle(`Utility Commands`)
         .setColor(COLOR)
-        .setDescription(`<i>Available utility commands</i>`)
+        .setDescription(`Available utility commands`)
         .addFields(
             { name: 'Ping', value: 'Command `/ping`' },
             { name: ' ', value: 'Checks and displays latency between bot and client.' },
@@ -35,7 +34,7 @@ const Paginate = require('discordjs-paginate');
     const FREECOMPANY_EMBED = new EmbedBuilder()
         .setTitle(`Free Company Commands`)
         .setColor(COLOR)
-        .setDescription(`<i>FFXIV Free Company statistics commands</i>`)
+        .setDescription(`FFXIV Free Company statistics commands`)
         .addFields(
             { name: 'Free Company Statistics', value: 'Command `/fcstats fc server`' },
             { name: ' ', value: 'Lists Free Company data from FFFXIVAPI, and filters and paginates by 25 entries at a time. If two or more FCs share similar FC names, Chocobob will only retrieve the first result. Please be **specific**.' },
@@ -44,7 +43,7 @@ const Paginate = require('discordjs-paginate');
     const FUN_EMBED = new EmbedBuilder()
         .setTitle(`Fun Commands`)
         .setColor(COLOR)
-        .setDescription(`<i>Random commands</i>`)
+        .setDescription(`Random commands`)
         .addFields(
             { name: 'Head Pats', value: 'Command `/headpats`' },
             { name: ' ', value: 'Makes Chocobob blush and feel loved for all his hard work.' },
@@ -68,7 +67,7 @@ const Paginate = require('discordjs-paginate');
         data: new SlashCommandBuilder()
             .setName('help')
             .setDescription('Lists commands.'),
-        async execute(interaction) {
+        async execute(interaction, client) {
             // Send DM to the message's author
             interaction.user.send({ content: `Curious about my Kweh Powers, are you? *DM sent because you are a member of a mutal server: ${interaction.member.guild.name}. Do not reply to this message as I will have returned to my Chocobo Stable once you finish reading this.*`, embeds: EMBEDS })
                 .then(sentMessage => interaction.reply(`I just sent you a DM about all my ~~Kwehbilities~~ commands!`))
