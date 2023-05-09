@@ -1,10 +1,10 @@
 {
   "name": "chocobobdiscordbot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "FFXIV bot assistant",
-  "main": "chocoboStall.js",
+  "main": "src/bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test",
     "start": "node .",
     "production": "NODE_ENV=production&&npm start",
     "development": "set NODE_ENV=development&&npm start"
@@ -20,11 +20,14 @@
   },
   "homepage": "https://github.com/tolliverk/chocobobDiscordBot#readme",
   "dependencies": {
+    "@discordjs/rest": "^1.7.1",
     "@napi-rs/canvas": "^0.1.40",
     "@xivapi/js": "^0.4.1",
+    "discord-api-types": "^0.37.42",
     "discord.js": "^14.9.0",
     "discordjs-button-pagination": "^3.0.1",
     "discordjs-paginate": "^0.0.7-bunnygirl",
+    "discordjs-v14-pagination": "^1.0.6",
     "dotenv": "^16.0.3",
     "puppeteer": "^19.8.5",
     "puppeteer-extra": "^3.3.6",

@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, PermissionsBitField } = require('discord.js');
-const { clientId } = require('../../config.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
