@@ -9,3 +9,11 @@ const guildSchema = new Schema({
 });
 
 module.exports = model("Guild", guildSchema, "guilds");
+
+guildSchema.statics.findByGuild = (guildId) => {
+    return this.findOne({ guildId: guildId });
+}
+
+guildSchema.statics.removeGuild = (guildId) => {
+    return this.deleteOne({ guildId: guildId });
+}

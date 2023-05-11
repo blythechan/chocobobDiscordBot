@@ -24,6 +24,7 @@
     "@napi-rs/canvas": "^0.1.40",
     "@xivapi/js": "^0.4.1",
     "chalk": "^5.2.0",
+    "crypto-js": "^4.1.1",
     "discord-api-types": "^0.37.42",
     "discord.js": "^14.9.0",
     "discordjs-button-pagination": "^3.0.1",

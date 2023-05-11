@@ -31,6 +31,20 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
             { name: ' ', value: 'Description:TBD.' },
             { name: ' ', value: 'Status: ❌ TBD' }
         );
+    const SERVER_EMBED = new EmbedBuilder()
+        .setTitle(`Server Commands`)
+        .setColor(COLOR)
+        .setDescription(`**:robot: Available server commands**`)
+        .addFields(
+            { name: 'Server Registration or "Server De-Registration"', value: 'Command `/server register`' },
+            { name: ' ', value: 'Description: Allow Chocobob to log administrative actions, support FFXIV players with their Lodestone, and much more, by registering with Chocobob. "De-registering" with Chocobob will involve the removal of most if not all data related to your server.\n\nIt is **not** required to register with Chocobob, but some commands may not be available.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Server Log', value: 'Command `/log`' },
+            { name: ' ', value: 'Description: Retrieves the latest 100 logs pertaining to your server, and attempts to export it into a text file.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+        );
     const ECONOMY_EMBED = new EmbedBuilder()
         .setTitle(`Economy Commands`)
         .setColor(COLOR)
@@ -79,7 +93,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
             { name: ' ', value: 'All actions made by Chocobob require either a command or a command ran by a server moderator. Any data saved is strictly to log the execution of an action and the response created by Chocobob. Message history that is unrelated to a command will not and will never be saved.' },
             { name: 'Chocobob Bot Details', value: 'Chocobob#9508 is developed and maintained by Blythe#6060. It relies heavily on FFXIVAPI, Lodestone API, and Dalamund Bridge. If you find that Chocobob is incorrectly using your art, is acting unpredictable, or could be improved, please DM Blythe#6060.'}
         );
-    const EMBEDS = [ BOT_EMBED, ECONOMY_EMBED, FREECOMPANY_EMBED, FUN_EMBED, DB_EMBED ];
+    const EMBEDS = [ BOT_EMBED, SERVER_EMBED, ECONOMY_EMBED, FREECOMPANY_EMBED, FUN_EMBED, DB_EMBED ];
     
     module.exports = {
         data: new SlashCommandBuilder()
