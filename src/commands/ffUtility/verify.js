@@ -21,8 +21,7 @@ module.exports = {
 		const server = interaction.options.getString('server');
 		const author = interaction.guild.members.cache.get(interaction.member.id);
 		const lodestoneCharacter = await Character.findOne({ guildId: interaction.guild._id, memberId: author.user.id })
-
-		if (lodestoneCharacter && lodestoneCharacter.verified) return interaction.reply(`That character has already been verified as of ${lodestoneCharacter.updatedAt}.`);
+		
 
 		const characterId = /^\d+$/.test(character);
 
@@ -53,7 +52,7 @@ module.exports = {
 			lodestoneCharacter.verified = true;
 			lodestoneCharacter.updatedAt = Date().toString();
 			await Character.updateOne(lodestoneCharacter).catch(console.error);
-			return interaction.reply(`Your character, ${finalRes.Character.Name}, from ${server} has already been verified with Chocobob!`);
+			return interaction.reply(`Your character, ${finalRes.Character.Name}, from ${server} has already been verified with Chocobob as of ${lodestoneCharacter.updatedAt}!`);
 		} else if (!lodestoneCharacter || !tokenMatch || newCharacter) {
 			const randomPlainText = generatePlaintText(5);
 			const encryptedText = lodestoneCharacter && lodestoneCharacter.lodestoneToken ? lodestoneCharacter.lodestoneToken : `choco-${encryptString(`${randomPlainText}${author.user.id}`, ENCRPTY)}`;
@@ -77,7 +76,7 @@ module.exports = {
 				await Character.updateOne(lodestoneCharacter).catch(console.error);
 			}
 			interaction.user.send({
-				content: `I'm sending you a verification token code for your character's Lodestone because your request on a server: ${interaction.member.guild.name}. Do not reply to this message as I will have returned to my Chocobo Stable once you finish reading this.\n\nAdd the following token to your character's Lodestone bio:\n\n**${encryptedText}**\n\nChanges to the Lodestone can take a while to update and be recognized by Chocobob. The time it takes for Lodestone to update is out of Chocobob's control.`,
+				content: `I'm sending you a verification token code for your character's Lodestone because your request on a server: ${interaction.member.guild.name}. Do not reply to this message as I will have returned to my Chocobo Stable once you finish reading this.\n\nAdd the following token to your character's Lodestone bio:\n\n**${encryptedText}**\n\nChanges to the Lodestone can take a while to update and be recognized by Chocobob. The time it takes for Lodestone to update is out of Chocobob's control. If you want to check when the last update of Lodestone was, try running the Lodestone Updates command.`,
 				ephemeral: true
 			})
 				.then(sentMessage => interaction.reply({

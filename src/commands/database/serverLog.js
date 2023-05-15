@@ -8,6 +8,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('log')
         .setDescription('Review the latest 50 server administrative actions. Server Administrators command.')
+        .addChannelOption(option => option
+            .setName('channel')
+            .setDescription('The text channel to send the exported file to')
+            .setRequired(true))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction, client) {
         let guildProfile = await Guild.findOne({ guildId: interaction.guild.id });
@@ -16,6 +20,7 @@ module.exports = {
                 content: `*Administrative Action.* This command requires that your server be registered with Chocobob. To register, use the ${`/server register`} command.`
             });
         } else {
+            const channel = interaction.options.getChannel('channel');
             const logs = await AdministrativeAction.find({}).where({ guildId: interaction.guild._id }).sort({ _id: -1 }).limit(50);
             
             if (logs && logs.length > 0) {
@@ -28,7 +33,7 @@ module.exports = {
                 });
 
                 try {
-                    const fileName = "chocobobServerLogs.txt";
+                    const fileName = `chocobobServerLogs_${new Date()}.txt`;
                     fs.writeFile(fileName, logText.toString(), (error) => {
                         if (error) {
                             console.error('Failed to create chocobobServerLogs text file:', error);
@@ -38,7 +43,8 @@ module.exports = {
                         const file = new AttachmentBuilder (fileName);
 
                         // Sending the file as an attachment
-                        interaction.reply({ files: [file] })
+                        channel.send({ files: [file] });
+                        interaction.reply({ content: `Server Logs request successfully exported and sent to ${channel}.`, ephemeral: true })
                             .then(() => {
                                 // Removing the temporary file
                                 fs.unlink(fileName, (error) => {

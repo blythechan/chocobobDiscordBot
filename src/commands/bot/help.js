@@ -23,13 +23,6 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
             { name: ' ', value: 'Description: Removes up to 100 messages within the last 14 days on the current text-channel. User can be selected by the command itself. It is possible to select Chocobob. Success message will disappear after 10 seconds.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-            { name: 'Verify Character', value: 'Command `/verify server user`' },
-            { name: ' ', value: 'Description: Assists with connecting and verifying a Discord user to their FFXIV Lodestone character. Used to determine roles, nicknames, and permissions within the server.' },
-            { name: ' ', value: 'Status:❌ TBD.' },
-            { name: ' ', value: ' ' },
-            { name: 'FFXIV Community News', value: 'Command `/headlines`' },
-            { name: ' ', value: 'Description:TBD.' },
-            { name: ' ', value: 'Status: ❌ TBD' }
         );
     const SERVER_EMBED = new EmbedBuilder()
         .setTitle(`Server Commands`)
@@ -40,8 +33,8 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
             { name: ' ', value: 'Description: Allow Chocobob to log administrative actions, support FFXIV players with their Lodestone, and much more, by registering with Chocobob. "De-registering" with Chocobob will involve the removal of most if not all data related to your server.\n\nIt is **not** required to register with Chocobob, but some commands may not be available.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-            { name: 'Server Log', value: 'Command `/log`' },
-            { name: ' ', value: 'Description: Retrieves the latest 100 logs pertaining to your server, and attempts to export it into a text file.' },
+            { name: 'Server Log', value: 'Command `/log channel`' },
+            { name: ' ', value: 'Description: Retrieves the latest 50 logs pertaining to your server, and attempts to export it into a text file before sending it off to the specified text channel. Success response is ephemeral, but the export is visible to all depending on text channel.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
         );
@@ -55,13 +48,22 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
             { name: ' ', value: 'Status: ❌ API support is being researched (likely Uiniversalis).' }
         );
     const FREECOMPANY_EMBED = new EmbedBuilder()
-        .setTitle(`**Free Company Commands**`)
+        .setTitle(`FFXIV Commands`)
         .setColor(COLOR)
-        .setDescription(`:chart: FFXIV Free Company statistics commands`)
+        .setDescription(`:chart: FFXIV related statistics (and more) commands`)
         .addFields(
             { name: 'Free Company Statistics', value: 'Command `/fcstats fc server`' },
             { name: ' ', value: 'Description: Lists Free Company data from FFFXIVAPI, and filters and paginates by 25 entries at a time. If two or more FCs share similar FC names, Chocobob will only retrieve the first result. Please be **specific**.' },
-            { name: ' ', value: 'Status: ❌ Additional API support is being researched.' }
+            { name: ' ', value: 'Status: ❌ Additional API support is being researched.' },
+            { name: ' ', value: ' ' },
+            { name: 'Latest Lodestone News', value: 'Command `/lodestone lookup`' },
+            { name: ' ', value: 'Description: Retrieves the latest or current news article depending on lookup. PST timezone enforced. Maintenance lookup assumed if no option is provided.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Verify Character', value: 'Command `/verify server user`' },
+            { name: ' ', value: 'Description: Assists with connecting and verifying a Discord user to their FFXIV Lodestone character. Used to determine roles, nicknames, and permissions within the server.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
         );
     const FUN_EMBED = new EmbedBuilder()
         .setTitle(`Fun Commands`)
@@ -75,14 +77,6 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
             { name: 'Ship', value: 'Command `/ship shipUserA shipUserB`' },
             { name: ' ', value: 'Description: Jokingly determines a percentage of possibility between two users.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
-            { name: 'Server Registration', value: 'Command `/serverregister`' },
-            { name: ' ', value: 'Description: Register and verify your server with Chocobob if you want administrative actions to be logged, FFXIV players to link their characters up with the Lodestone, or ability to use other features. Please review **About Chocobob Bot** section below if you have any concerns.' },
-            { name: ' ', value: 'Status: :white_check_mark:' },
-            { name: ' ', value: ' ' },
-            { name: 'Server Registration Removal', value: 'Command `/serverderegister remove`' },
-            { name: ' ', value: 'Description: Removes the registration and verification between your server and Chocobob. Chocobob will still be a member of your server, but it will no longer log command, assist in FFXIV player verification, etc. There are many commands that are still usable even if a server is not registered!' },
-            { name: ' ', value: 'Status: :white_check_mark:' },
-            { name: ' ', value: ' ' },
         );
     const DB_EMBED = new EmbedBuilder()
         .setTitle(`About Chocobob Bot`)

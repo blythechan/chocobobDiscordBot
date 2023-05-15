@@ -1,4 +1,5 @@
 const Guild = require('../../schemas/guild');
+const AdministrativeAction = require('../../schemas/administrativeAction');
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const mongoose = require('mongoose');
 
@@ -30,23 +31,24 @@ module.exports = {
 				});
 				await guildProfile.save().catch(console.error);
 				await interaction.reply({
-					content: `*Server Registered to Chocobo Stall*\nServer Name: ${guildProfile.guildName}\nServer Id: ${guildProfile.guildId}\n\n${registering}`
+					content: `*DiscordServer Registered to Chocobo Stall*\nServer Name: ${guildProfile.guildName}\nServer Id: ${guildProfile.guildId}\n\n${registering}`
 				});
 			} else {
 				await interaction.reply({
-					content: `*Server Already Exists in Chocobo Stall*\nServer Name: ${guildProfile.guildName}\nServer Id: ${guildProfile.guildId}\n\n${registering}`
+					content: `*DiscordServer Already Exists in Chocobo Stall*\nServer Name: ${guildProfile.guildName}\nServer Id: ${guildProfile.guildId}\n\n${registering}`
 				});
 			}
 		} else if (choice === "deregister") {
-			const deregistering = `Removing a server from Chocobob's Stall means that any logs or data captured by Chocobob will be removed. No administrative commands, FFXIV player Lodestone registering, or other logs will be saved. Chocobob **does not** require a server to be registered.`;
+			const deregistering = `Removing a Discord server from Chocobob's Stall means that any logs or data captured by Chocobob will be removed. No administrative commands, FFXIV player Lodestone registering, or other logs will be saved after this command succeeds. Chocobob **does not** require a Discord server to be registered to continue using its other features.`;
 			if (!guildProfile) {
 				await interaction.reply({
-					content: `*Server does not appear to be registered to Chocobo Stall*.`
+					content: `*Discord Server does not appear to be registered to Chocobo Stall*.`
 				});
 			} else {
 				await guildProfile.deleteOne({ guildId: guildProfile.guildId }).catch(console.error);
+				await AdministrativeAction.deleteMany({ guildId: guildProfile.guildId }).catch(console.error);
 				await interaction.reply({
-					content: `*Server was removed from the Chocobo Stall Database*.\n\n${deregistering}`
+					content: `*Discord Server and its related logs were removed from the Chocobo Stall Database*.\n\n${deregistering}`
 				});
 
 			}
