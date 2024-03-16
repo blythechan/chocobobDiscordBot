@@ -33,10 +33,13 @@ module.exports = {
                 });
 
                 try {
-                    const fileName = `chocobobServerLogs_${new Date()}.txt`;
+                    const fileName = `chocobobServerLogs_${new Date().toDateString()}.txt`;
                     fs.writeFile(fileName, logText.toString(), (error) => {
                         if (error) {
                             console.error('Failed to create chocobobServerLogs text file:', error);
+                            interaction.reply({
+                                content: `I could not retrieve the logs pertaining to your server.`
+                            });
                             return;
                         }
 

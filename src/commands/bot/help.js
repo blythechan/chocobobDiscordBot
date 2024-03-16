@@ -52,9 +52,13 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
         .setColor(COLOR)
         .setDescription(`:chart: FFXIV related statistics (and more) commands`)
         .addFields(
-            { name: 'Free Company Statistics', value: 'Command `/fcstats fc server`' },
+            { name: 'Free Company Statistics', value: 'Command `/fcstats fc server fcstatsonly`' },
             { name: ' ', value: 'Description: Lists Free Company data from FFFXIVAPI, and filters and paginates by 25 entries at a time. If two or more FCs share similar FC names, Chocobob will only retrieve the first result. Please be **specific**.' },
-            { name: ' ', value: 'Status: ❌ Additional API support is being researched.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Free Company Member Export', value: 'Command `/fcexport fc server channel`' },
+            { name: ' ', value: 'Description: Lists Free Company member names and rank in a CSV text file. If two or more FCs share similar FC names, Chocobob will only retrieve the first result. Please be **specific**.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
             { name: 'Latest Lodestone News', value: 'Command `/lodestone lookup`' },
             { name: ' ', value: 'Description: Retrieves the latest or current news article depending on lookup. PST timezone enforced. Maintenance lookup assumed if no option is provided.' },
@@ -62,6 +66,10 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
             { name: ' ', value: ' ' },
             { name: 'Verify Character', value: 'Command `/verify server user`' },
             { name: ' ', value: 'Description: Assists with connecting and verifying a Discord user to their FFXIV Lodestone character. Used to determine roles, nicknames, and permissions within the server.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Who Am I', value: 'Command `/whoami charactername colorcode`' },
+            { name: ' ', value: 'Description: Displays one of your registered characters in a Character Card created by Chocobob Bot.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
         );

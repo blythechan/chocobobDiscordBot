@@ -32,7 +32,7 @@ module.exports = {
     async execute(interaction, client) {
         const requestOptions_limit = {
             method: 'GET',
-            redirect: 'follow',
+            timeout: 0,
             limit: 1
         };
         const choice = interaction.options.getString('lookup')
@@ -41,7 +41,7 @@ module.exports = {
 
         switch (choice) {
             case 'lodestoneupdates':
-                const response_updates = await fetch(`https://na.lodestonenews.com/news/updates`, requestOptions_limit)
+                const response_updates = await fetch(`https://na.lodestonenews.com/news/updates?limit=1`, requestOptions_limit)
                     .then(response => response.text())
                     .catch(error => console.log('error', error));
                 const lsu_res = JSON.parse(response_updates);
@@ -61,7 +61,7 @@ module.exports = {
                     embeds: [lsu_embed],
                 });
             case 'status':
-                const response_status = await fetch(`https://na.lodestonenews.com/news/status`, requestOptions_limit)
+                const response_status = await fetch(`https://na.lodestonenews.com/news/status?limit=1`, requestOptions_limit)
                     .then(response => response.text())
                     .catch(error => console.log('error', error));
                 const status_res = JSON.parse(response_status);
@@ -81,39 +81,43 @@ module.exports = {
                     embeds: [status_embed],
                 });
             case 'maintenance':
-                const response_maintenance = await fetch(`https://na.lodestonenews.com/news/maintenance/current`, requestOptions_limit)
+                const response_maintenance = await fetch(`https://na.lodestonenews.com/news/maintenance?limit=1`, requestOptions_limit)
                     .then(response => response.text())
                     .catch(error => console.log('error', error));
                 const res = JSON.parse(response_maintenance);
                 let maintenance_embed = new EmbedBuilder();
-                lodestoneTopics.forEach((category, idx) => {
-                    const body = res[category][0];
-                    if (body) {
-                        const timespanThresh = handleTimespanDiff(body.start, body.end);
-                        const active = timespanThresh
-                            ? "Current"
-                            : body.active
-                                ? "Planned"
-                                : "Finished";
-                        maintenance_embed
-                            .setTitle(`[Maintenance] ${body.title}`)
-                            .setURL(body.url)
-                            .setDescription(`${lodestoneTopicsCap[idx]} posted ${formatDateTime(body.time)} (PST)`)
-                            .setThumbnail(lodestoneTopicThumbnails[idx])
-                            .addFields(
-                                { name: 'Countdown', value: `${timespanThresh ? timespanThresh : `Finished`}` },
-                                { name: 'Timespan', value: `${formatDateTime(body.start)} (PST) to ${formatDateTime(body.end)} (PST)` },
-                                { name: ' ', value: ' ' },
-                                { name: 'Status', value: `${active}` }
-                            );
-                    }
-                });
+                const body = res && res.length > 0 ? res[0] : undefined;
+                if (body) {
+                    const timespanThresh = handleTimespanDiff(body.start, body.end);
+                    const active = timespanThresh
+                        ? "Current"
+                        : body.active
+                            ? "Planned"
+                            : "Finished";
+                    maintenance_embed
+                        .setTitle(`[Maintenance] ${body.title}`)
+                        .setURL(body.url)
+                        .setDescription(`Maintenance posted ${formatDateTime(body.time)} (PST)`)
+                        .setThumbnail(lodestoneTopicThumbnails[6])
+                        .addFields(
+                            { name: 'Countdown', value: `${timespanThresh ? timespanThresh : `Finished`}` },
+                            { name: 'Timespan', value: `${formatDateTime(body.start)} (PST) to ${formatDateTime(body.end)} (PST)` },
+                            { name: ' ', value: ' ' },
+                            { name: 'Status', value: `${active}` }
+                        );
+                } else {
+                    maintenance_embed
+                        .setTitle(`[Maintenance]`)
+                        .setURL(`https://na.lodestonenews.com/news/maintenance?limit=1`)
+                        .setDescription(`No maintenance to report.`)
+                        .setThumbnail(lodestoneTopicThumbnails[6]);
+                }
                 return interaction.reply({
                     content: `Retrieving current or latest FFXIV Maintenance...`,
                     embeds: [maintenance_embed],
                 });
             case 'notices':
-                const response_notices = await fetch(`https://na.lodestonenews.com/news/notices`, requestOptions_limit)
+                const response_notices = await fetch(`https://na.lodestonenews.com/news/notices?limit=1`, requestOptions_limit)
                     .then(response => response.text())
                     .catch(error => console.log('error', error));
                 const notice_res = JSON.parse(response_notices);
@@ -162,8 +166,8 @@ function handleTimespanDiff(startDT, endDT) {
         let s = {
             year: 31536000,
             month: 2592000,
-            week: 604800, // uncomment row to ignore
-            day: 86400,   // feel free to add your own row
+            week: 604800, 
+            day: 86400,  
             hour: 3600,
             minute: 60,
             second: 1
@@ -181,7 +185,8 @@ function handleTimespanDiff(startDT, endDT) {
         if (r.hour !== 0) finalResult += `${r.hour} hours `;
         if (r.minute !== 0) finalResult += `${r.minute} minutes `;
         if (r.second !== 0) finalResult += `${r.second} seconds `;
-        finalResult += startFormatted < current ? "till finished" : "from now";
+        if(current > startFormatted) finalResult = false;
+        else finalResult += startFormatted < current ? "till finished" : "from now";
     } else {
         finalResult = false;
     }

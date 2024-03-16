@@ -56,12 +56,14 @@ module.exports = {
 		.setName('fcstats')
 		.setDescription('Retrieve FC statistics')
             .addStringOption(option => option.setName('fc').setDescription('The Free Company full name to request statistics from').setRequired(true))
-            .addStringOption(option => option.setName('server').setDescription('The Free Company full name to request statistics from').setRequired(true)),
+            .addStringOption(option => option.setName('server').setDescription('The Free Company full name to request statistics from').setRequired(true))
+            .addBooleanOption(option => option.setName('fcstatsonly').setDescription('Only display FC stats, ignore FC members.')),
 	async execute(interaction) {
         try {
         await interaction.deferReply();
         const fc = interaction.options.getString('fc');
         const fcServer = interaction.options.getString('server');
+        const fcstatsonly = interaction.options.getBoolean('fcstatsonly');
 		//find the FC with its name and server
         let res = await xiv.freecompany.search(fc, {server: fcServer});
         //get the FC ID
@@ -69,20 +71,36 @@ module.exports = {
         //get and return fc members
         let userFC = await xiv.freecompany.get(id, {data: 'FCM'});
         const fcm = userFC.free_company_members;
-        const fcs = await xiv.freecompany.get(id);
+        //const fcs = await xiv.freecompany.get(id);
+        const fcRanks = [];
         const data = fcm.map(player => {
+            let rank = player.rank;
+            fcRanks.push(rank);
             return `${player.name} - ${player.rank}`;
         });
-        const embeds = createEmbedPages(data, "#f2f28a", `FC Member Retrieval`, fcs.free_company.crest[2]);
-        paginationEmbed(interaction, embeds, buttons, 100000);
+
+        const uniqueRanks = fcRanks.reduce((acc, val) => {
+            acc[val] = acc[val] === undefined ? 1 : acc[val] += 1;
+            return acc;
+          }, {});
+
+        if(!fcstatsonly) {
+            const embeds = createEmbedPages(data, "#f2f28a", `FC Member Retrieval`, userFC.free_company.crest[2]);
+            paginationEmbed(interaction, embeds, buttons, 100000);
+        }
         await interaction.editReply(`
-            **FC Info**
-            FC: ${fcs.free_company.name} - ${fcs.free_company.tag}
-            Slogan: ${fcs.free_company.slogan}
-            Location: ${fcs.free_company.server}; ${fcs.free_company.estate.plot}
-            Formed: ${new Date(fcs.free_company.formed*1000)}
-            Recruitment Status: ${fcs.free_company.recruitment}
-            Total Members: ${fcs.free_company.active_member_count}`);
+        ${fcstatsonly ? "*Displaying FC Info Only*" : "*FC Info*"}
+        Name: ${userFC.free_company.name} <${userFC.free_company.tag}>
+        Slogan: ${userFC.free_company.slogan}
+        Location: ${userFC.free_company.server}; ${userFC.free_company.estate.plot}
+        Allied: ${userFC.free_company.grand_company}
+        Formed: ${new Date(userFC.free_company.formed*1000)}
+        Latest Activity: ${new Date(userFC.free_company.parse_date*1000)};
+        Recruitment Status: ${userFC.free_company.recruitment}
+        Total Members: ${userFC.free_company.active_member_count} / 512
+        Ranks: ${Object.entries(uniqueRanks).map(x => ` ${x[0]}`)}
+        Total Ranks: ${Object.keys(uniqueRanks).length} / 15
+        Rank Breakdown: ${Object.entries(uniqueRanks).map(x => ` ${x[0]}: ${x[1]}`)}`);
         } catch (ex) {
             console.error(ex);
             await interaction.editReply(`Something went wrong, kweh! ${ex.message}`);
