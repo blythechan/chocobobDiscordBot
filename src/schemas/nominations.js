@@ -6,6 +6,11 @@ const nominationsSchema = new Schema({
     nominatingId:       String,
     nominatingRank:     String,
     nominatingRankId:   String,
+    messageId:          String,
+    reactionYes:        Number,
+    reactionNo:         Number,
+    reactionUnsure:     Number,
+    voters:             Array,
     // Default is two weeks unless otherwise provided on insert
     expires:            { type: Date, default: () => new Date(+new Date() + 14*24*60*60*1000) }
 }, {

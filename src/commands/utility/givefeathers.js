@@ -46,7 +46,7 @@ module.exports = {
 			const featherCount = 1;
 
 			// // Verify command is past cooldown
-			const verifyCooldown = await CommandAudit.checkCooldown(guildId, sender, "givefeathers");
+			const verifyCooldown = await CommandAudit.checkCooldown(guildId, sender, "givefeathers", "12 hours");
 			if(!verifyCooldown) {
 				const getExpiration = await CommandAudit.retrieveCommandAudit(guildId, "givefeathers", true);
 				const cooldownFinished = new Date(getExpiration.createdAt);

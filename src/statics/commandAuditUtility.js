@@ -43,7 +43,7 @@ CommandAudit.createAudit = async function(guildId, memberId, command) {
  */
 CommandAudit.checkCooldown = async function (guildId, memberId, command, cooldown) {
     if(!guildId || !command || !cooldown) {
-        console.error(`Invalid request.`);
+        console.error(`Invalid request, missing parameter.`);
         return false;
     }
     const lastCommand = await this.findOne({ guildId: guildId, memberId: memberId, command: command  }).sort({ createdAt: -1 });
@@ -51,9 +51,9 @@ CommandAudit.checkCooldown = async function (guildId, memberId, command, cooldow
     if(lastCommand && lastCommand.createdAt) {
         switch(cooldown) {
             case "5 minutes":
-                return isWithin5Minutes(lastCommand.createdAt) === true ? false : true;
+                return passed5MinuteCooldown(lastCommand.createdAt);
             default:
-                return isWithin12Hours(lastCommand.createdAt) === true ? false : true;
+                return passed12HourCooldown(lastCommand.createdAt);
         }
     } else { // There is no record, proceed
         return true;
@@ -65,13 +65,12 @@ CommandAudit.checkCooldown = async function (guildId, memberId, command, cooldow
  * @param {Date} dateTime Obtains the date time as recorded on the document
  * @returns Boolean
  */
-function isWithin12Hours(dateTime) {
+function passed12HourCooldown(dateTime) {
     const inputDate = new Date(dateTime);
     const currentDate = new Date();
-    const differenceInMilliseconds = currentDate - inputDate;
-    const twelveHoursInMilliseconds = 12 * 60 * 60 * 1000;
-    // Check if the difference is less than 12 hours in milliseconds
-    return differenceInMilliseconds <= twelveHoursInMilliseconds;
+    const twelveHoursAgo = new Date(currentDate);
+    twelveHoursAgo.setHours(currentDate.getHours() - 12);  
+    return inputDate < twelveHoursAgo;
 }
 
 /**
@@ -79,13 +78,12 @@ function isWithin12Hours(dateTime) {
  * @param {Date} dateTime Obtains the date time as recorded on the document
  * @returns Boolean
  */
-function isWithin5Minutes(dateTime) {
+function passed5MinuteCooldown(dateTime) {
     const inputDate = new Date(dateTime);
     const currentDate = new Date();
-    const differenceInMilliseconds = currentDate - inputDate;
-    const fiveMinutesInMilliseconds = 300000;
-    // Check if the difference is less than 5 minutes in milliseconds
-    return differenceInMilliseconds <= fiveMinutesInMilliseconds;
+    const twelveHoursAgo = new Date(currentDate);
+    twelveHoursAgo.setHours(currentDate.getMinutes() - 5);  
+    return inputDate < twelveHoursAgo;
 }
 
 module.exports = CommandAudit;

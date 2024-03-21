@@ -72,6 +72,11 @@ Nominations.removeNominations = async function(guildId, member, nominator, rank,
     return await this.deleteMany(filters);
 }
 
+/**
+ * Retrieve a nomination by its identifier in mongo
+ * @param {String} guildId Obtains the server's identifier
+ * @param {ObjectId} id Obtains the mongo document identifier representing the nomination
+ */
 Nominations.findNominationById = async function(guildId, id) {
     if(!guildId) {
         console.error(`Invalid request.`);
@@ -81,8 +86,57 @@ Nominations.findNominationById = async function(guildId, id) {
     return await this.findOne({ _id: id, guildId: guildId });
 }
 
+/**
+ * Remove a nominaiton by its mongo document identifier
+ * @param {ObjectId} id Obtains the mongo document identifier representing the nomination
+ */
 Nominations.removeNominationById = async function(id) {
     return await this.deleteOne({ _id: id });
+}
+
+/**
+ * Update the nomination with the created message's id
+ * @param {ObjectId} id Obtains the mongo document identifier representing the nomination
+ * @param {String} messageId Obtains the message's identifier
+ */
+Nominations.updateNominationWithMessageId = async function(id, messageId) {
+    return await this.updateOne({ _id: id }, { messageId: messageId });
+}
+
+/**
+ * Update an existing nomination based on nomination reaction type: adding or removing
+ * @param {String} messageId Obtains the message's identifier
+ * @param {String} emoji Obtains the emoji the user is reacting too, unicode does not always work
+ * @param {String} votingMemberId Obtains the voting user's identifier
+ * @param {Boolean} removeVote Obtains the flag is the user is removing their vote
+ */
+Nominations.updateNominationScore = async function(messageId, emoji, votingMemberId, removeVote) {
+    // '☑', '🇽', '❔'
+    // '\u2611', '\uD83C\uDDFD', '\u2754'
+    const ACCEPTED_EMOJIS = ['☑', '🇽', '❔'];
+    if(!ACCEPTED_EMOJIS.includes(emoji)) return [];
+    const noms = this.findOne({ messageId: messageId }).lean();
+    if(noms /*&& noms.memberId !== votingMemberId && noms.nominatingId !== votingMemberId*/) {
+        const applyVote = removeVote === true ? -1 : 1;
+        switch(emoji) {
+            case ACCEPTED_EMOJIS[0]:
+                return await this.updateOne({ messageId: messageId }, { $inc: { "reactionYes": applyVote } });
+            case ACCEPTED_EMOJIS[1]:
+                return this.updateOne({ messageId: messageId }, { $inc: { "reactionNo": applyVote } });
+            case ACCEPTED_EMOJIS[2]:
+                return this.updateOne({ messageId: messageId }, { $inc: { "reactionUnsure": applyVote } });
+            default:
+                return [];
+        }
+    }
+}
+
+/**
+ * Retrieve nomination by discord message identifier
+ * @param {String} messageId Obtains the message's identifier
+ */
+Nominations.findByMessageId = async function(messageId) {
+    return await this.findOne({ messageId: messageId });
 }
 
 module.exports = Nominations;

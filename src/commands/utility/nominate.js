@@ -139,6 +139,9 @@ module.exports = {
 				embeds: [CARD_EMBED_NOM],
 				fetchReply: true
 			});
+
+			await Nominations.updateNominationWithMessageId(result._id, message.id);
+
 			message.react('\u2611');
 			message.react('\uD83C\uDDFD');
 			message.react('\u2754');
