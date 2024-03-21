@@ -1,25 +1,15 @@
 const { Schema, model } = require('mongoose');
 
 const nominationsSchema = new Schema({
-    _id:                Schema.Types.ObjectId,
     guildId:            String,
     memberId:           String,
-    member:             { type: Object, required: true },
-    nominating:         { type: Object, required: true },
+    nominatingId:       String,
     nominatingRank:     String,
     nominatingRankId:   String,
-    expires:            new Date()
+    // Default is two weeks unless otherwise provided on insert
+    expires:            { type: Date, default: () => new Date(+new Date() + 14*24*60*60*1000) }
 }, {
     timestamps:         true
 });
 
-module.exports = model("nominations", nominationsSchema, "nominations");
-
-// Retrieve nominations by user
-nominationsSchema.statics.retrieveNominaitons = (guildId, memberId, onlyExpired) => {
-    if(onlyExpired === true) {
-        return this.findOne({ guildId: guildId, memberId: memberId, expires: { $lte: new Date() } });
-    } else {
-        return this.findOne({ guildId: guildId, memberId: memberId, expires: { $$gte: new Date() } });
-    }
-}
+module.exports = model("Nominations", nominationsSchema, "nominations");

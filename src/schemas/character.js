@@ -14,38 +14,3 @@ const characterSchema = new Schema({
 });
 
 module.exports = model("Character", characterSchema, "characters");
-
-characterSchema.statics.findByMemberId = (id) => {
-    return this.findOne({ memberId: id });
-}
-
-characterSchema.statics.findByCharacter = (characterName, characterId, memberId) => {
-    let query = this.findOne();
-    let filters = [];
-    if(characterName) {
-        filters.push({
-            characterName: characterName
-        });
-    }
-
-    if(characterId) {
-        filters.push({
-            characterId: characterId
-        });
-    }
-
-    if(memberId) {
-        filters.push({
-            memberId: memberId
-        });
-    }
-
-    for(let i = 0; i < filters.length; i++) {
-        query.where(filters[i].fieldName).equals(filters[i].value);
-    }
-    return query.exec();
-}
-
-characterSchema.statics.removeCharacter = (characterName, characterId, memberId) => {
-    return this.findOne({ $or:{ characterName: characterName, characterId: characterId }, memberId: memberId }).remove().exec();
-}

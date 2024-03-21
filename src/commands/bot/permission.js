@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField } = require('discord.js');
 const AdministrativeAction = require('../../schemas/administrativeAction');
-const Guild = require('../../schemas/guild');
+const Guilds = require('../../schemas/guilds');
 const mongoose = require('mongoose');
 module.exports = {
     data: new SlashCommandBuilder()
@@ -26,7 +26,7 @@ module.exports = {
             return interaction.reply({ content: 'I do not have permission to manage roles.', ephemeral: false });
         }
 
-        const regGuild = await Guild.findOne({ guildId: interaction.guild.id });
+        const regGuilds = await Guilds.findOne({ guildId: interaction.guild.id });
 
         const user = interaction.options.getUser('user');
         const action = interaction.options.getString('action').toLowerCase();
@@ -81,7 +81,7 @@ module.exports = {
                 ? `*Administrative Action.*\nRole, ${role.name}, has been **unassigned** from ${user}.`
                 : `*Administrative Action.*\n${user}'s server status has changed based off the following action: "${action}."`;
         let loggedIt = false;
-        if (regGuild) {
+        if (regGuilds) {
             const author = interaction.guild.members.cache.get(interaction.member.id);
             let logAction = await new AdministrativeAction({
                 _id: new mongoose.Types.ObjectId(),
@@ -102,14 +102,14 @@ module.exports = {
             const ctx = `*DM received because you are a member of a mutual server: **${interaction.member.guild.name}**. Do not reply to this message.*\n\n${sayThis} **${interaction.member.guild.name}**.\n\n**Reason**: ${reason}`;
             member.send({ content: ctx })
                 .then(sentMessage => {
-                    interaction.reply({ content: `${forAdmin}\n\n**Reason**: ${reason}\n\n${notifyThem}\n\n${(loggedIt && regGuild) ? `Action logged into Chocobo Stall.` : "Administrative Action Logging requires server to be registered with Chocobob's Stall."}`, ephemeral: ephemeral })
+                    interaction.reply({ content: `${forAdmin}\n\n**Reason**: ${reason}\n\n${notifyThem}\n\n${(loggedIt && regGuilds) ? `Action logged into Chocobo Stall.` : "Administrative Action Logging requires server to be registered with Chocobob's Stall."}`, ephemeral: ephemeral })
                 })
                 .catch(error => {
                     console.error(error.message);
                     interaction.reply({ content: `${forAdmin}\n\n**Reason**: ${reason}\n\n${notifyThem}`, ephemeral: ephemeral })
                 });
         } else {
-            interaction.reply({ content: `${forAdmin}\n\n**Reason**: ${reason}\n\n${notifyThem}\n\n${(loggedIt && regGuild) ? `Action logged into Chocobo Stall.` : "Administrative Action Logging requires server to be registered with Chocobob's Stall."}`, ephemeral: ephemeral });
+            interaction.reply({ content: `${forAdmin}\n\n**Reason**: ${reason}\n\n${notifyThem}\n\n${(loggedIt && regGuilds) ? `Action logged into Chocobo Stall.` : "Administrative Action Logging requires server to be registered with Chocobob's Stall."}`, ephemeral: ephemeral });
         }
     }
 };

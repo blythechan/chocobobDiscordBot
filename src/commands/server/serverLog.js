@@ -1,6 +1,6 @@
 const fs = require('fs');
 const mongoose = require('mongoose');
-const Guild = require('../../schemas/guild');
+const Guilds = require('../../schemas/guilds');
 const AdministrativeAction = require('../../schemas/administrativeAction');
 const { SlashCommandBuilder, AttachmentBuilder, PermissionFlagsBits } = require('discord.js');
 
@@ -14,10 +14,10 @@ module.exports = {
             .setRequired(true))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction, client) {
-        let guildProfile = await Guild.findOne({ guildId: interaction.guild.id });
+        let guildProfile = await Guilds.findOne({ guildId: interaction.guild.id });
         if (!guildProfile) {
             return interaction.reply({
-                content: `*Administrative Action.* This command requires that your server be registered with Chocobob. To register, use the ${`/server register`} command.`
+                content: `*Administrative Action.* This command requires that your server be registered with Chocobob. To register, use the ${`/server register`} command.`, ephemeral: true
             });
         } else {
             const channel = interaction.options.getChannel('channel');
@@ -63,12 +63,12 @@ module.exports = {
                 } catch (error) {
                     console.error(error);
                     interaction.reply({
-                        content: `I could not retrieve the logs pertaining to your server.`
+                        content: `I could not retrieve the logs pertaining to your server.`, ephemeral: true
                     });
                 }
             } else {
                 interaction.reply({
-                    content: `I do not appear to have any logs pertaining to your server in my Chocobo Stall.`
+                    content: `I do not appear to have any logs pertaining to your server in my Chocobo Stall.`, ephemeral: true
                 });
             }
         }

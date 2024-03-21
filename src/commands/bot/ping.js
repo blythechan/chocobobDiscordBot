@@ -1,4 +1,5 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const defaults = require('../../functions/tools/defaults.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -9,9 +10,14 @@ module.exports = {
 			fetchReply: true
 		});
 
-		const newMessage = `:ping_pong: Client and Bot Relationship Latency is ${ message.createdTimestamp - interaction.createdTimestamp }ms, and API Latency is ${client.ws.ping}ms :ping_pong:`;
-		await interaction.editReply({
-			content: newMessage
+		const CARD_EMBED_PONG= new EmbedBuilder()
+			.setTitle("Ping Pong!")
+			.setColor(defaults.COLOR)
+			.setDescription(`:ping_pong: Client and Bot Relationship Latency is ${ message.createdTimestamp - interaction.createdTimestamp }ms, and API Latency is ${client.ws.ping}ms :ping_pong:`);
+			
+		return interaction.editReply({
+			embeds: [CARD_EMBED_PONG],
+			content: ""
 		});
-	}
+}
 };

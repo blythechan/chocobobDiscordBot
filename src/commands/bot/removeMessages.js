@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField } = require('discord.js');
-const Guild = require('../../schemas/guild');
+const Guilds = require('../../schemas/guilds');
 const AdministrativeAction = require('../../schemas/administrativeAction');
 const mongoose = require('mongoose');
 
@@ -17,7 +17,7 @@ module.exports = {
             return interaction.reply({ content: 'I do not have permission to manage messages.', ephemeral: false });
         }
 
-        const regGuild = await Guild.findOne({ guildId: interaction.guild.id });
+        const regGuilds = await Guilds.findOne({ guildId: interaction.guild.id });
 
         const filterOldMessages = true;
         const user = interaction.options.getUser('user');
@@ -40,7 +40,7 @@ module.exports = {
                     .then((goodbyeMessages) => {
                         loggedIt = true;
                         totalPurged = goodbyeMessages.size;
-                        return interaction.channel.send(`*Administrative Action.*\n Purged ${goodbyeMessages.size}/100 messages within the last 2 weeks belonging to ${user.username}. ${reason && reason !== "" ? `\n\n**Reason**: ${reason}` : ""}.\n\n${regGuild ? `Action attempted logging into Chocobo Stall.` : "Administrative Action Logging requires server to be registered with Chocobob's Stall."}`);
+                        return interaction.channel.send(`*Administrative Action.*\n Purged ${goodbyeMessages.size}/100 messages within the last 2 weeks belonging to ${user.username}. ${reason && reason !== "" ? `\n\n**Reason**: ${reason}` : ""}.\n\n${regGuilds ? `Action attempted logging into Chocobo Stall.` : "Administrative Action Logging requires server to be registered with Chocobob's Stall."}`);
                     }).catch(error => {
                         console.log(`Failed to delete: ${error}`);
                         return interaction.editReply(failure);
@@ -52,7 +52,7 @@ module.exports = {
             return interaction.reply(failure);
         });
 
-        if (regGuild && loggedIt) {
+        if (regGuilds && loggedIt) {
             const author = interaction.guild.members.cache.get(interaction.member.id);
             let logAction = await new AdministrativeAction({
                 _id: new mongoose.Types.ObjectId(),

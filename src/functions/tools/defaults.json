@@ -1,0 +1,65 @@
+{
+    "CHOCO_SAD_ICON": "https://sdl-stickershop.line.naver.jp/products/0/0/4/1100/android/stickers/18630.png;compress=true",
+    "FEATHER_ICON": "https://ffxiv.gamerescape.com/w/images/thumb/8/85/Chocobo_Feather_Icon.png/96px-Chocobo_Feather_Icon.png",
+    "CHOCO_WOF_ICON": "https://www.pngfind.com/pngs/m/171-1710050_final-fantasy-clipart-chocobo-chocobo-world-of-ff.png",
+    "CHOCO_WIKI_ICON": "https://cdn.finalfantasywiki.com/b/b1/FFF_Chocobo_Tales_-_Chocobo_art.jpg",
+    "CHOCO_HAPPY_ICON": "https://stickershop.line-scdn.net/stickershop/v1/product/1100/LINEStorePC/main.png;compress=true",
+    "DETAIL_TIDBITS": [
+        "Registering a server with Chocobob's Stall means that Chocobob can successfully keep track of administrative commands, assist in FFXIV player Lodestone registering, and more. You can remove a server from Chocobob's Stall via the `/server deregister` command. Chocobob **does not** require a server to be registered.",
+        "Removing a Discord server from Chocobob's Stall means that any logs or data captured by Chocobob will be removed. No administrative commands, FFXIV player Lodestone registering, or other logs will be saved after this command succeeds. Chocobob **does not** require a Discord server to be registered to continue using its other features.",
+        "Registered roles are used for the `/nominate` command. You can modify these registered permissions at any time, kweh!"
+    ],
+    "DEFAULT_RESPONSES": [
+        "Kweh? It seems you have already used this command within the past COOLDOWN_LIMIT hours. Please wait until TIMESPAN to use this command again.",
+        "Kweh? Please wait until COOLDOWN_LIMIT minutes have passed before running this command."
+    ],
+    "DEFAULT_RESPONSES_KEY": [
+        "COMMAND_COOLDOWN_FAIL_12",
+        "COMMAND_COOLDOWN_FAIL_5"
+    ],
+    "FEATHER_CATEGORIES": [
+        {
+            "combat": "cat_combat"
+        },
+        {
+            "crafting": "cat_crafting"
+        },
+        {
+            "gathering": "cat_gathering"
+        },
+        {
+            "leadership": "cat_leadership"
+        },
+        {
+            "dedication": "cat_dedication"
+        },
+        {
+            "chaos": "cat_chaos"
+        },
+        {
+            "generosity": "cat_generosity"
+        }
+    ],
+    "COLOR": "#efde7a",
+    "ATTRIBUTES": [
+        "Strength",
+        "Dexterity",
+        "Vitality",
+        "Intelligence",
+        "Mind",
+        "Piety",
+        "HP",
+        "MP",
+        "Tenacity",
+        "Attack Power",
+        "Defense",
+        "Spell Speed",
+        "Magic Defense",
+        "Critical Hit Rate",
+        "Attack Magic Potency",
+        "Healing Magic Potency", 
+        "Determination",
+        "Skill Speed",
+        "Spell Speed"
+    ]
+}

@@ -1,10 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-
-    const COLOR = "#efde7a";
+const defaults = require('../../functions/tools/defaults.json');
 
     const BOT_EMBED = new EmbedBuilder()
         .setTitle(`Utility Commands`)
-        .setColor(COLOR)
+        .setColor(defaults.COLOR)
         .setDescription(`**:gear: Available utility commands**`)
         .addFields(
             { name: 'Permissions', value: 'Command `/permissions user action reason notify ephemeral`' },
@@ -26,7 +25,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
         );
     const SERVER_EMBED = new EmbedBuilder()
         .setTitle(`Server Commands`)
-        .setColor(COLOR)
+        .setColor(defaults.COLOR)
         .setDescription(`**:robot: Available server commands**`)
         .addFields(
             { name: 'Server Registration or "Server De-Registration"', value: 'Command `/server register`' },
@@ -40,7 +39,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
         );
     const ECONOMY_EMBED = new EmbedBuilder()
         .setTitle(`Economy Commands`)
-        .setColor(COLOR)
+        .setColor(defaults.COLOR)
         .setDescription(`**:moneybag: FFXIV Marketboard commands**`)
         .addFields(
             { name: 'Market Board Search', value: 'Command `/mb item server`' },
@@ -49,7 +48,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
         );
     const FREECOMPANY_EMBED = new EmbedBuilder()
         .setTitle(`FFXIV Commands`)
-        .setColor(COLOR)
+        .setColor(defaults.COLOR)
         .setDescription(`:chart: FFXIV related statistics (and more) commands`)
         .addFields(
             { name: 'Free Company Statistics', value: 'Command `/fcstats fc server fcstatsonly`' },
@@ -75,7 +74,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
         );
     const FUN_EMBED = new EmbedBuilder()
         .setTitle(`Fun Commands`)
-        .setColor(COLOR)
+        .setColor(defaults.COLOR)
         .setDescription(`**:yum: Random commands**`)
         .addFields(
             { name: 'Head Pats', value: 'Command `/headpats`' },
@@ -88,7 +87,7 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
         );
     const DB_EMBED = new EmbedBuilder()
         .setTitle(`About Chocobob Bot`)
-        .setColor(COLOR)
+        .setColor(defaults.COLOR)
         .setDescription(`**:rose: Purpose, expectations, promises, the whole shebang.**`)
         .addFields(
             { name: 'Purpose and Promise of Chocobob', value: 'A fun Discord bot with various commands to not only entertain a Discord user but also assist a FFXIV user along their journey throughout Eorzea and beyond.' },

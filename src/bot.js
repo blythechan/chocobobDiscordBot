@@ -16,7 +16,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildScheduledEvents,
         GatewayIntentBits.AutoModerationConfiguration
-    ] 
+    ], 
 });
 
 client.commands = new Collection();
