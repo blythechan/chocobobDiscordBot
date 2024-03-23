@@ -1,7 +1,7 @@
 
 const puppeteer = require('puppeteer');
-scrapeLodestone = async function (id) {
-    const browser = await puppeteer.launch();
+scrapeLodestoneByCharacterId = async function (id) {
+    const browser = await puppeteer.launch({ headless: "new"});
     const page = await browser.newPage();
     await page.goto(`https://na.finalfantasyxiv.com/lodestone/character/${id}/`);
     let pieces = await page.evaluate(() => {
@@ -135,4 +135,4 @@ scrapeLodestone = async function (id) {
 }
 
 
-module.exports = scrapeLodestone;
+module.exports = scrapeLodestoneByCharacterId;

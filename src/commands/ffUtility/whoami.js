@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder } = require('discord.js');
-const scrapeLodestone = require('../../functions/tools/lodestoneScrape');
+const scrapeLodestoneByCharacterId = require('../../functions/tools/lodestoneScrape');
 const Character = require('../../schemas/character');
 const CommandAudit = require('../../statics/commandAuditUtility');
 const defaults = require('../../functions/tools/defaults.json');
@@ -90,12 +90,12 @@ module.exports = {
             let collectionsMissing = "";
 
             if (lodestoneCharacter) {
-                finalRes = await scrapeLodestone(lodestoneCharacter.characterId);
+                finalRes = await scrapeLodestoneByCharacterId(lodestoneCharacter.characterId);
                 finalCollect = await fetch(`https://ffxivcollect.com/api/characters/${lodestoneCharacter.characterId}`, requestOptions_limit)
                     .then(response => response.json());
             // By Id without lodestone lookup
             } else if(/^\d+$/.test(character)) {
-                finalRes = await scrapeLodestone(character);
+                finalRes = await scrapeLodestoneByCharacterId(character);
                 finalCollect = await fetch(`https://ffxivcollect.com/api/characters/${character}`, requestOptions_limit)
                     .then(response => response.json());
             } else {
