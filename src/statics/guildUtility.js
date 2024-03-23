@@ -1,4 +1,5 @@
-const Guilds = require('../schemas/guilds')
+const Guilds = require('../schemas/guilds');
+const defaults = require('../functions/tools/defaults.json');
 
 /**
  * Retrieve a server's registration status by its identifier
@@ -43,18 +44,37 @@ Guilds.registerGuild = async function (interaction) {
  * @param {String} guildId Obtain the server's identifier
  * @param {Object} content Obtains an object of roles to replace and register in db
  */
-Guilds.updateGuildRegisteredRoles = async function (docId, content) {
+Guilds.updateGuildRegisteredRoles = async function (docId, content ) {
     if(!docId) {
         console.error(`Invalid request.`);
         return false;
     }
+
     await Guilds.findOneAndUpdate(
         { _id: docId },
         {$set: { rolesRegistered: content || [] } },
         { new: true }
     );
 
-    return await this.findOne({ _id: docId }).select("rolesRegistered")
+    return await this.findOne({ _id: docId }).select("rolesRegistered");
+}
+
+/**
+ * Update a guild's registered feather categories
+ */
+Guilds.updateGuildFeatherCategories = async function (docId, content ) {
+    if(!docId) {
+        console.error(`Invalid request.`);
+        return false;
+    }
+
+    await Guilds.findOneAndUpdate(
+        { _id: docId },
+        {$set: { featherRoles: content || defaults.FEATHER_CATS } },
+        { new: true }
+    );
+
+    return await this.findOne({ _id: docId }).select("featherRoles");
 }
 
 module.exports = Guilds;

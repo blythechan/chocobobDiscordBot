@@ -33,13 +33,12 @@ Nominations.nominateUser = async function (guildId, memberId, nominatorId, rank,
         return false;
     }
     // First verify the member is not already being actively nominated
-    const existingNomination = await this.findOne({ guildId: guildId, memberId: memberId, nominatingId: nominatorId, expires: { $lte: new Date() } });
-    if(existingNomination && existingNomination.length > 0) {
-        return false;
+    const existingNomination = await this.findOne({ guildId: guildId, nominatingId: nominatorId, nominatingRank: rank, nominatingRankId: rankId });
+    if(existingNomination && existingNomination.expires > new Date()) {
+        return "EXISTS";
     }
-    const newDoc = new Nominations({ guildId: guildId, memberId: memberId, nominatingId: nominatorId, nominatingRank: rank, nominatingRankId: rankId });
-    newDoc.save();
-    return await this.findOne({ guildId: guildId, memberId: memberId, nominatingId: nominatorId, expires: { $gte: new Date() } });
+    const newDoc = new Nominations({ guildId: guildId, memberId: memberId, nominatingId: nominatorId, nominatingRank: rank, nominatingRankId: rankId }).save();
+    return newDoc;
 }
 
 /**
@@ -114,20 +113,34 @@ Nominations.updateNominationScore = async function(messageId, emoji, votingMembe
     // '☑', '🇽', '❔'
     // '\u2611', '\uD83C\uDDFD', '\u2754'
     const ACCEPTED_EMOJIS = ['☑', '🇽', '❔'];
-    if(!ACCEPTED_EMOJIS.includes(emoji)) return [];
+    if(!emoji || !ACCEPTED_EMOJIS.includes(emoji)) return [];
     const noms = this.findOne({ messageId: messageId }).lean();
-    if(noms /*&& noms.memberId !== votingMemberId && noms.nominatingId !== votingMemberId*/) {
-        const applyVote = removeVote === true ? -1 : 1;
-        switch(emoji) {
-            case ACCEPTED_EMOJIS[0]:
-                return await this.updateOne({ messageId: messageId }, { $inc: { "reactionYes": applyVote } });
-            case ACCEPTED_EMOJIS[1]:
-                return this.updateOne({ messageId: messageId }, { $inc: { "reactionNo": applyVote } });
-            case ACCEPTED_EMOJIS[2]:
-                return this.updateOne({ messageId: messageId }, { $inc: { "reactionUnsure": applyVote } });
-            default:
-                return [];
-        }
+    if(noms && noms.memberId !== votingMemberId && noms.nominatingId !== votingMemberId) {
+            if(removeVote === true) {
+                switch(emoji) {
+                    case ACCEPTED_EMOJIS[0]:
+                        return await this.updateOne({ messageId: messageId }, { $pull: { votersYes: votingMemberId } });
+                    case ACCEPTED_EMOJIS[1]:
+                        return this.updateOne({ messageId: messageId }, { $pull: { votersNo: votingMemberId } });
+                    case ACCEPTED_EMOJIS[2]:
+                        return this.updateOne({ messageId: messageId }, { $pull: { votersUnsure: votingMemberId } });
+                    default:
+                        return [];
+                }
+            } else {
+                switch(emoji) {
+                    case ACCEPTED_EMOJIS[0]:
+                        return await this.updateOne({ messageId: messageId }, { $push: { votersYes: votingMemberId } });
+                    case ACCEPTED_EMOJIS[1]:
+                        return this.updateOne({ messageId: messageId }, { $push: { votersNo: votingMemberId } });
+                    case ACCEPTED_EMOJIS[2]:
+                        return this.updateOne({ messageId: messageId }, { $push: { votersUnsure: votingMemberId } });
+                    default:
+                        return [];
+                }
+            }
+    } else {
+        return false;
     }
 }
 

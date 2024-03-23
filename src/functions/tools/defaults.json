@@ -40,6 +40,15 @@
             "generosity": "cat_generosity"
         }
     ],
+    "FEATHER_CATS": [
+        { "cat": "Combat", "role": "Warrior", "threshold": 1 }, 
+        { "cat": "Crafting", "role": "Santa's Helper", "threshold": 1 }, 
+        { "cat": "Chaos", "role": "Gremlin", "threshold": 1 }, 
+        { "cat": "Dedication", "role": "Number One Fan", "threshold": 1 }, 
+        { "cat": "Gathering", "role": "Janitor", "threshold": 1 },
+        { "cat": "Generosity", "role": "UWU", "threshold": 1 }, 
+        { "cat": "Leadership", "role": "BDE", "threshold": 1 }
+    ],
     "COLOR": "#efde7a",
     "ATTRIBUTES": [
         "Strength",

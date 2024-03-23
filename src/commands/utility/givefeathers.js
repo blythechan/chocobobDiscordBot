@@ -10,20 +10,16 @@ const defaults = require('../../functions/tools/defaults.json');
  * Retrieves server identifier, sender's identifier, channel members, and mentioned member based on provided options from requesting user
  */
 
-
-///// TO DO: Add cooldown, but exlcude admin roles from cooldown. Allow admin override of feathers.
-
 module.exports = {
-	//cooldown: 43200, // 12 hours
 	data: new SlashCommandBuilder()
 		.setName('givefeathers')
 		.setDescription('Give a friend some Chocobo Feathers!')
 		.addStringOption(option => option.setName('category').setDescription('Categorical reason for feather gifting?').setRequired(true).setAutocomplete(true))
 		.addUserOption(option => option.setName('user').setDescription('Mention the user you want to give feathers to?').setRequired(false))
 		.addChannelOption(option => option.setName('voicechannel').setDescription('Gift to all users currently active in a voice channel?').addChannelTypes(ChannelType.GuildVoice).setRequired(false)),
-		async autocomplete(interaction, client) {
+		async autocomplete(interaction) {
 			const focusedValue = interaction.options.getFocused();
-			const choices = ["Combat", "Crafting", "Chaos", "Dedication", "Gathering", "Generosity", "Leadership"];
+			const choices = defaults.FEATHER_;
 			const filtered = choices.filter((choice) => choice.toLowerCase().startsWith(focusedValue.toLowerCase()));
 			await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
 		},

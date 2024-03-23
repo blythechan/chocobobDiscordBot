@@ -3,15 +3,13 @@ const Guilds = require ('../../statics/guildUtility');
 const Nominations = require ('../../statics/nominationsUtility');
 const defaults = require('../../functions/tools/defaults.json');
 
-///// TO DO: Add cooldown, but exlcude admin roles from cooldown.
-
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('nominate')
 		.setDescription('Nominate someone for a promotion!')
 		.addStringOption(option => option.setName('removenomination').setDescription('Provide the id of the nomination you want to remove').setRequired(false))
 		.addUserOption(option => option.setName('user').setDescription('Which user do you want to nominate?').setRequired(false)),
-	async execute(interaction, client) {
+	async execute(interaction) {
 		const guildProfile = await Guilds.findByGuild(interaction.guild.id);
 		if(!guildProfile) {
 			const CARD_EMBED_STATUS1 = new EmbedBuilder()
@@ -33,7 +31,7 @@ module.exports = {
 				embeds: [CARD_EMBED_STATUS2],
 				ephemeral: true
 			});
-		}
+		} 
 
 		const user = interaction.options.getUser("user");
 		const removenoms = interaction.options.getString("removenomination");
@@ -83,6 +81,20 @@ module.exports = {
 		const member = interaction.guild.members.cache.get(user.id);
 		const memberRoles = member.roles.cache;
 		
+		if(member === nominator) {
+			const CARD_EMBED_NOM_ERR = new EmbedBuilder()
+				.setTitle("Self-Nomination Error")
+				.setColor(defaults.COLOR)
+				.addFields(
+					{ name: " ", value: "You cannot nominate yourself." }
+				);
+	
+			return interaction.reply({
+				embeds: [CARD_EMBED_NOM_ERR],
+				ephemeral: true
+			});
+		}
+
 		// Determine which server roles the user may already have
 		let nextRole = [];
 		guildProfile.rolesRegistered.map(role => {
@@ -108,13 +120,19 @@ module.exports = {
 		if(targetRole && targetRole !== null && targetRole.id) {
 			// Insert nomination first
 			const result = await Nominations.nominateUser(guildProfile.guildId, nominator.id, user.id, targetRole.name, targetRole.id);
-			if(!result || result === null) {
+			if(!result || result === null || result === "EXISTS") {
+				const errorMsg = result === "EXISTS"
+					? "I wasn't able to nominate that user due to an active nomination."
+					: "I wasn't able to nominate that user due to an error."
+				const errorTitle = result === "EXISTS"
+					? "Nomination Ongoing for that User"
+					: "Nomination Error";
 				const CARD_EMBED_NOM_ERR = new EmbedBuilder()
-					.setTitle("Nomination Error")
+					.setTitle(errorTitle)
 					.setColor(defaults.COLOR)
 					.setThumbnail(defaults.CHOCO_SAD_ICON)
 					.addFields(
-						{ name: " ", value: `I wasn't able to nominate that user due to an error.` }
+						{ name: " ", value: errorMsg }
 					);
 			
 				return interaction.reply({
@@ -131,9 +149,9 @@ module.exports = {
 					{ name: " ", value: `Nomination Id: ${result._id}` },
 					{ name: " ", value: `Voting closes on ${result.expires}` },
 					{ name: " ", value: " " },
-					{ name: ":ballot_box_with_check: Vote Yes", value: " " },
-					{ name: ":regional_indicator_x: Vote No", value: " " },
-					{ name: ":grey_question: You're Unsure", value: " " }
+					{ name: ":ballot_box_with_check: Yes", value: " " },
+					{ name: ":regional_indicator_x: No", value: " " },
+					{ name: ":grey_question: Undecided", value: " " }
 				);
 			const message = await interaction.reply({
 				embeds: [CARD_EMBED_NOM],

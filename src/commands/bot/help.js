@@ -32,19 +32,18 @@ const defaults = require('../../functions/tools/defaults.json');
             { name: ' ', value: 'Description: Allow Chocobob to log administrative actions, support FFXIV players with their Lodestone, and much more, by registering with Chocobob. "De-registering" with Chocobob will involve the removal of most if not all data related to your server.\n\nIt is **not** required to register with Chocobob, but some commands may not be available.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
+            { name: 'Nominations', value: 'Command `/nominate user`' },
+            { name: ' ', value: 'Description: Nominate a user for a promotion. Requires server to be registered and server roles to be set with Chocobob.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Give Feathers', value: 'Command `/gifeveathers category user` or `/givefeathers category voicechannel' },
+            { name: ' ', value: 'Description: Recognize server participation or general good heartedness by giving a Chocobo Feather to one or more users.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
             { name: 'Server Log', value: 'Command `/log channel`' },
             { name: ' ', value: 'Description: Retrieves the latest 50 logs pertaining to your server, and attempts to export it into a text file before sending it off to the specified text channel. Success response is ephemeral, but the export is visible to all depending on text channel.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-        );
-    const ECONOMY_EMBED = new EmbedBuilder()
-        .setTitle(`Economy Commands`)
-        .setColor(defaults.COLOR)
-        .setDescription(`**:moneybag: FFXIV Marketboard commands**`)
-        .addFields(
-            { name: 'Market Board Search', value: 'Command `/mb item server`' },
-            { name: ' ', value: 'Description: TBD.' },
-            { name: ' ', value: 'Status: ❌ API support is being researched (likely Uiniversalis).' }
         );
     const FREECOMPANY_EMBED = new EmbedBuilder()
         .setTitle(`FFXIV Commands`)
