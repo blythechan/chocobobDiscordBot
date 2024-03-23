@@ -1,7 +1,6 @@
 const defaults = require('../../functions/tools/defaults.json');
 
 function checkFeathersLimit(serverFeathers, featherDocument, recentFeatherCat) {
-    console.log(featherDocument);
     const featherCats = [];
     const featherRoles = [];
     const featherLimits = [];

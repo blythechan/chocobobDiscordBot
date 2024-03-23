@@ -179,7 +179,6 @@ module.exports = {
 
 				} else { // User mention
 					const result = await Feathers.giveFeathersByGuildMember(guildId, [user.id], featherCount, sender, category);
-					console.log("RES:",result);
 					if(result === false) {
 						const EMBED = customEmbedBuilder(
 							undefined,
@@ -194,12 +193,11 @@ module.exports = {
 					}
 
 					const userFeathers = await Feathers.findFeathersByGuildMember(guildId, user.id);
-					console.log("what is this:", userFeathers)
 
 					// ASSIGN ROLE
 					const ASSIGN_ROLE = userFeathers && userFeathers !== null && checkFeathersLimit(regGuild, userFeathers, category);
-					if(ASSIGN_ROLE) {
-						console.log(ASSIGN_ROLE);
+					let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE)
+					if(ASSIGN_ROLE && !(role || user.roles.cache.has(role.id))) {
 						try {
 							let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
 							if (!role) {
