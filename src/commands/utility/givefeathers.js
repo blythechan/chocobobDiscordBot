@@ -121,8 +121,7 @@ module.exports = {
 						const EMBED = customEmbedBuilder(
 							undefined,
 							defaults.CHOCO_SAD_ICON,
-							"There are no users in that voice channel, kweh!",
-							undefined
+							"There are no users in that voice channel, kweh!"
 						);
 						return interaction.reply({
 							embeds: [EMBED],
@@ -132,14 +131,14 @@ module.exports = {
 			
 					// Extract the usernames
 					const userArray = membersInVoice.map(member => member.user.id);
-					// Prevent users from gifting themselves
+					// Prevent users from gifting themselves by filtering this out, if this is empty 
+					// then they were attempting to give themselves feathers
 					const filteredUserIds = userArray.filter(entity => entity !== sender.id);
 					if(filteredUserIds.length === 0) {
 						const EMBED = customEmbedBuilder(
 							undefined,
 							defaults.CHOCO_SAD_ICON,
-							"Sorry, but you cannot send feathers to yourself, kweh.",
-							undefined
+							"Sorry, but you cannot send feathers to yourself, kweh."
 						);
 						return interaction.reply({
 							embeds: [EMBED],
@@ -149,6 +148,7 @@ module.exports = {
 
 					const result = await Feathers.giveFeathersByGuildMember(guildId, filteredUserIds, featherCount, sender, category);
 					
+					// FAILED
 					if(result === false) {
 						const EMBED = customEmbedBuilder(
 							undefined,
@@ -161,8 +161,68 @@ module.exports = {
 							ephemeral: true
 						});
 					} 
-						
+					
+					// SUCCEESS
 					const mentionedUsersArray = filteredUserIds.map(user => `<@${user}>`);
+					// Begin auto-role
+					await Promise.all(filteredUserIds.map(user => {
+						const userFeathers = Feathers.findFeathersByGuildMember(guildId, user.id);
+						// ASSIGN ROLE
+						const ASSIGN_ROLE = userFeathers && userFeathers !== null && checkFeathersLimit(regGuild, userFeathers, category);
+						// Retrieve all user data
+						const guildUser = interaction.guild.members.cache.get(user.id);
+						if(ASSIGN_ROLE) {
+							try {
+								let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
+								if (!role) {
+									role = interaction.guild.roles.create({
+										name: ASSIGN_ROLE,
+										color: 'Grey', // Change this to your preferred color
+										permissions: [], // Add permissions if needed
+										reason: 'Role created automatically by Chocobob'
+									});
+								} 
+								// verify user does not already have this role
+								if(!guildUser.roles.cache.some(r => r.name === ASSIGN_ROLE)) { 
+									const randomTrophy = [
+										"https://res.cloudinary.com/mediocre/image/upload/v1534735796/ofyr2erfhympnucdovnc.png",
+										"https://pbs.twimg.com/profile_images/958522091283791872/zqS5vca_.jpg",
+										"https://media.cmsmax.com/ticydm4kh3ezejhlvv1wi/thumbs/dtrf19ab-cvideo-1.jpg",
+										"https://image.freepik.com/free-vector/classic-video-game-trophy_24911-47180.jpg"
+									];
+		
+									// Adding the role to the user
+									const member = interaction.guild.members.fetch(user.id);
+									 member.roles.add(role);
+									CommandAudit.createAudit(guildId, sender, "givefeathers", `Assigned ${role.name} [${role.id}] to user ${user.id}`);
+									const EMBED = customEmbedBuilder(
+										"Participation is Cool!",
+										defaults.CHOCO_HAPPY_ICON,
+										undefined,
+										[
+											{ name: " ", value: `You recieved an achievement in ${interaction.guild.name}, and have been assigned "${ASSIGN_ROLE}." Congratulations!`}
+										],
+										undefined,
+										undefined,
+										randomTrophy[Math.floor(Math.random() * randomTrophy.length)]
+									);
+									user.send({
+										embeds: [EMBED]
+									});
+								}
+							} catch (error) {
+								console.error('Auto role for feather category failed: ', error);
+								const EMBED = customEmbedBuilder(
+									undefined,
+									defaults.CHOCO_SAD_ICON,
+									`KWEH! Something went wrong when trying to auto-assign a role.`
+								);
+								return interaction.reply({
+									embeds: [EMBED]
+								});
+							}
+						}
+					}));
 					const EMBED = customEmbedBuilder(
 						"Chocobo Feathers Giveaway!",
 						defaults.FEATHER_ICON,
@@ -177,7 +237,7 @@ module.exports = {
 						ephemeral: true
 					});
 
-				} else { // User mention
+				} else { // USER MENTION
 					const result = await Feathers.giveFeathersByGuildMember(guildId, [user.id], featherCount, sender, category);
 					if(result === false) {
 						const EMBED = customEmbedBuilder(
@@ -196,8 +256,9 @@ module.exports = {
 
 					// ASSIGN ROLE
 					const ASSIGN_ROLE = userFeathers && userFeathers !== null && checkFeathersLimit(regGuild, userFeathers, category);
-					let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE)
-					if(ASSIGN_ROLE && !(role || user.roles.cache.has(role.id))) {
+					// Retrieve all user data
+					const guildUser = interaction.guild.members.cache.get(user.id);
+					if(ASSIGN_ROLE) {
 						try {
 							let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
 							if (!role) {
@@ -207,32 +268,45 @@ module.exports = {
 									permissions: [], // Add permissions if needed
 									reason: 'Role created automatically by Chocobob'
 								});
+							} 
+							// verify user does not already have this role
+							if(!guildUser.roles.cache.some(r => r.name === ASSIGN_ROLE)) { 
+								const randomTrophy = [
+									"https://res.cloudinary.com/mediocre/image/upload/v1534735796/ofyr2erfhympnucdovnc.png",
+									"https://pbs.twimg.com/profile_images/958522091283791872/zqS5vca_.jpg",
+									"https://media.cmsmax.com/ticydm4kh3ezejhlvv1wi/thumbs/dtrf19ab-cvideo-1.jpg",
+									"https://image.freepik.com/free-vector/classic-video-game-trophy_24911-47180.jpg"
+								];
+	
+								// Adding the role to the user
+								const member = await interaction.guild.members.fetch(user.id);
+								await member.roles.add(role);
+								CommandAudit.createAudit(guildId, sender, "givefeathers", `Assigned ${role.name} [${role.id}] to user ${user.id}`);
+								const EMBED = customEmbedBuilder(
+									"Participation is Cool!",
+									defaults.CHOCO_HAPPY_ICON,
+									undefined,
+									[
+										{ name: " ", value: `You recieved an achievement in ${interaction.guild.name}, and have been assigned "${ASSIGN_ROLE}." Congratulations!`}
+									],
+									undefined,
+									undefined,
+									randomTrophy[Math.floor(Math.random() * randomTrophy.length)]
+								);
+								await user.send({
+									embeds: [EMBED]
+								});
 							}
-
-							const randomTrophy = [
-								"https://res.cloudinary.com/mediocre/image/upload/v1534735796/ofyr2erfhympnucdovnc.png",
-								"https://pbs.twimg.com/profile_images/958522091283791872/zqS5vca_.jpg",
-								"https://media.cmsmax.com/ticydm4kh3ezejhlvv1wi/thumbs/dtrf19ab-cvideo-1.jpg",
-								"https://image.freepik.com/free-vector/classic-video-game-trophy_24911-47180.jpg"
-							];
-
-							// Adding the role to the user
-							const member = await interaction.guild.members.fetch(user.id);
-							await member.roles.add(role);
-							const EMBED = customEmbedBuilder(
-								"Participation is Cool!",
-								defaults.CHOCO_HAPPY_ICON,
-								`You recieved an achievement in ${interaction.guild.name}, and have been assigned "${ASSIGN_ROLE}." Congratulations!`,
-								undefined,
-								undefined,
-								undefined,
-								randomTrophy[Math.floor(Math.random() * randomTrophy.length)]
-							);
-							await interaction.user.send({
-								embeds: [EMBED]
-							});
 						} catch (error) {
 							console.error('Auto role for feather category failed: ', error);
+							const EMBED = customEmbedBuilder(
+								undefined,
+								defaults.CHOCO_SAD_ICON,
+								`KWEH! Something went wrong when trying to auto-assign a role.`
+							);
+							return interaction.reply({
+								embeds: [EMBED]
+							});
 						}
 					}
 

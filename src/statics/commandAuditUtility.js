@@ -13,7 +13,7 @@ CommandAudit.retrieveCommandAudit = async function (guildId, command, latest) {
     }
 }
 
-CommandAudit.createAudit = async function(guildId, memberId, command) {
+CommandAudit.createAudit = async function(guildId, memberId, command, details) {
     if(!guildId || !command) {
         console.error(`Invalid request.`);
         return false;
@@ -29,7 +29,8 @@ CommandAudit.createAudit = async function(guildId, memberId, command) {
     const newAudit = new CommandAudit({
         command: command,
         guildId: guildId,
-        memberId: memberId
+        memberId: memberId,
+        content: details || ""
     });
     await newAudit.save();
     return true;

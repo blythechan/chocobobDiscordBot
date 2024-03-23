@@ -32,27 +32,28 @@ function checkFeathersLimit(serverFeathers, featherDocument, recentFeatherCat) {
             }
             break;
         case featherCats[2]: // Chaos
-            if(gathering && gathering >= featherLimits[2]) {
+        console.log("here");
+            if(chaos && chaos >= featherLimits[2]) {
                 roleName = featherRoles[2];
             }
             break;
         case featherCats[3]: // Dedication
-            if(leadership && leadership >= featherLimits[3]) {
+            if( dedication&& dedication >= featherLimits[3]) {
                 roleName = featherRoles[3];
             }
             break;
         case featherCats[4]: // Gathering
-            if(dedication && dedication >= featherLimits[4]) {
+            if(gathering && gathering >= featherLimits[4]) {
                 roleName = featherRoles[4];
             }
             break;
         case featherCats[5]: // Generosity
-            if(chaos && chaos >= featherLimits[5]) {
+            if(generosity && generosity >= featherLimits[5]) {
                 roleName = featherRoles[5];
             }
             break;
        default: // Leadership
-            if(generosity && generosity >= featherLimits[6]) {
+            if(leadership && leadership >= featherLimits[6]) {
                 roleName = featherRoles[6];
             }
             break;
