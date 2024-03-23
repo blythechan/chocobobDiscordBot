@@ -3,6 +3,8 @@ const Feathers = require ('../../statics/feathersUtility');
 const Guild = require('../../schemas/guilds');
 const CommandAudit = require('../../statics/commandAuditUtility');
 const defaults = require('../../functions/tools/defaults.json');
+const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
+const { checkFeathersLimit } = require('../../events/utility/addRole');
 
 /**
  * Gift a user or users in voice channel Chocobo feathers.
@@ -19,31 +21,39 @@ module.exports = {
 		.addChannelOption(option => option.setName('voicechannel').setDescription('Gift to all users currently active in a voice channel?').addChannelTypes(ChannelType.GuildVoice).setRequired(false)),
 		async autocomplete(interaction) {
 			const focusedValue = interaction.options.getFocused();
-			const choices = defaults.FEATHER_;
-			const filtered = choices.filter((choice) => choice.toLowerCase().startsWith(focusedValue.toLowerCase()));
-			await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
+			const choices = defaults.FEATHER_CATS;
+			const filtered = choices.filter((choice) => choice.cat.startsWith(focusedValue));
+			await interaction.respond(filtered.map((choice) => ({ name: choice.cat, value: choice.cat })));
 		},
 	async execute(interaction, client) {
 		try {
 
 			const regGuild = await Guild.findOne({ guildId: interaction.guild.id });
 			if(!regGuild) {
-				await interaction.reply({ content: "Sorry, but I cannot run this command because it requires logging. Please have a server administrator `/register`, kweh.", ephemeral: true });
-				return;
+				const EMBED = customEmbedBuilder(
+					undefined,
+					defaults.CHOCO_SAD_ICON,
+					"Sorry, but I cannot run this command because it requires logging. Please have a server administrator `/server register`, kweh.",
+					undefined
+				);
+				return interaction.reply({
+					embeds: [EMBED],
+					ephemeral: true
+				});
 			}
 
 			const user = interaction.options.getUser("user");
 			const voiceChannel = interaction.options.getChannel('voicechannel');
 			const guildId = interaction.guild.id;
 			const category = interaction.options.getString('category')
-				? interaction.options.getString('category').toLowerCase().replace(" ", "")
+				? interaction.options.getString('category').replace(" ", "")
 				: undefined;
 			const sender = interaction.guild.members.cache.get(interaction.member.id);
 			const featherCount = 1;
 
 			// // Verify command is past cooldown
 			const verifyCooldown = await CommandAudit.checkCooldown(guildId, sender, "givefeathers", "12 hours");
-			if(!verifyCooldown) {
+			if(!verifyCooldown && interaction.member.id !== "139920603711930368") {
 				const getExpiration = await CommandAudit.retrieveCommandAudit(guildId, "givefeathers", true);
 				const cooldownFinished = new Date(getExpiration.createdAt);
 				cooldownFinished.setHours(cooldownFinished.getHours() + 12);
@@ -55,29 +65,69 @@ module.exports = {
 			// User isn't gifting anyone feathers
 			if(!user && !voiceChannel) {
 				console.error("Invalid action. Missing parameters.");
-				await interaction.reply({ content: "Sorry, but I don't know who to send these feathers to, kweh.", ephemeral: true });
-				return;
+				const EMBED = customEmbedBuilder(
+					undefined,
+					defaults.CHOCO_SAD_ICON,
+					"Sorry, but I don't know who to send these feathers to, kweh.",
+					undefined
+				);
+				return interaction.reply({
+					embeds: [EMBED],
+					ephemeral: true
+				});
 			} else if (user && user.id === sender) {
 				console.error("Invalid action. Cannot send to self.");
-				await interaction.reply({ content: "Sorry, kweh, but you cannot send feathers to yourself.", ephemeral: true });
-				return;
+				const EMBED = customEmbedBuilder(
+					undefined,
+					defaults.CHOCO_SAD_ICON,
+					"Sorry, kweh, but you cannot send feathers to yourself.",
+					undefined
+				);
+				return interaction.reply({
+					embeds: [EMBED],
+					ephemeral: true
+				});
 			} else if(!category) {
 				console.error("Invalid action. Category not set.");
-				await interaction.reply({ content: "Sorry, but I don't recognize that category, kweh.", ephemeral: true });
-				return;
+				const EMBED = customEmbedBuilder(
+					undefined,
+					defaults.CHOCO_SAD_ICON,
+					"Sorry, but I don't recognize that category, kweh.",
+					undefined
+				);
+				return interaction.reply({
+					embeds: [EMBED],
+					ephemeral: true
+				});
 			} else {
 				// Prioritize voice channel of user mention
 				if(voiceChannel) {
 					// If the channel is not a voice channel, return
 					if (!voiceChannel && voiceChannel.type !== 2) { // Formerly, 2 was "GUILD_VOICE"
-						await interaction.reply({ content: "That doesn't appear to be a valid voice channel, kweh.", ephemeral: true });
-						return;
+						const EMBED = customEmbedBuilder(
+							undefined,
+							defaults.CHOCO_SAD_ICON,
+							"That doesn't appear to be a valid voice channel, kweh.",
+							undefined
+						);
+						return interaction.reply({
+							embeds: [EMBED],
+							ephemeral: true
+						});
 					}
 					// Get all the members in the voice channel
 					const membersInVoice = voiceChannel.members;
 					if (membersInVoice.size === 0) {
-						await interaction.reply({ content: "There are no users in that voice channel, kweh!", ephemeral: true });
-						return;
+						const EMBED = customEmbedBuilder(
+							undefined,
+							defaults.CHOCO_SAD_ICON,
+							"There are no users in that voice channel, kweh!",
+							undefined
+						);
+						return interaction.reply({
+							embeds: [EMBED],
+							ephemeral: true
+						});
 					}
 			
 					// Extract the usernames
@@ -85,48 +135,116 @@ module.exports = {
 					// Prevent users from gifting themselves
 					const filteredUserIds = userArray.filter(entity => entity !== sender.id);
 					if(filteredUserIds.length === 0) {
-						await interaction.reply({ content: "Sorry, but you cannot send feathers to yourself, kweh.", ephemeral: true });
-						return;
+						const EMBED = customEmbedBuilder(
+							undefined,
+							defaults.CHOCO_SAD_ICON,
+							"Sorry, but you cannot send feathers to yourself, kweh.",
+							undefined
+						);
+						return interaction.reply({
+							embeds: [EMBED],
+							ephemeral: true
+						});
 					}
 
 					const result = await Feathers.giveFeathersByGuildMember(guildId, filteredUserIds, featherCount, sender, category);
 					
 					if(result === false) {
-						await interaction.reply({ content: `Kweh! Could not gift ${featherCount} feather.`, ephemeral: true });
-						return;
+						const EMBED = customEmbedBuilder(
+							undefined,
+							defaults.CHOCO_SAD_ICON,
+							`Kweh! Could not gift ${featherCount} feather.`,
+							undefined
+						);
+						return interaction.reply({
+							embeds: [EMBED],
+							ephemeral: true
+						});
 					} 
 						
 					const mentionedUsersArray = filteredUserIds.map(user => `<@${user}>`);
-					const CARD_EMBED_MULTIPLE = new EmbedBuilder()
-						.setTitle("Chocobo Feathers Giveaway!")
-						.setColor(defaults.COLOR)
-						.setDescription(`Gifted ${featherCount} of my Feathers, kweh~ :heart:`)
-						.setThumbnail(defaults.FEATHER_ICON)
-						.addFields(
+					const EMBED = customEmbedBuilder(
+						"Chocobo Feathers Giveaway!",
+						defaults.FEATHER_ICON,
+						`Gifted ${featherCount} of my Feathers, kweh~ :heart:`,
+						[
 							{ name: 'Category', value: `${category}` },
-							{ name: 'Friends', value: `${mentionedUsersArray.join(',')}` },
-						);
-						
+							{ name: 'Friends', value: `${mentionedUsersArray.join(',')}` }
+						]
+					);
 					return interaction.reply({
-						embeds: [CARD_EMBED_MULTIPLE],
+						embeds: [EMBED],
+						ephemeral: true
 					});
 
 				} else { // User mention
 					const result = await Feathers.giveFeathersByGuildMember(guildId, [user.id], featherCount, sender, category);
-					
+					console.log("RES:",result);
 					if(result === false) {
-						await interaction.reply({ content: `Could not gift ${featherCount} feather.`, ephemeral: true });
-						return;
+						const EMBED = customEmbedBuilder(
+							undefined,
+							defaults.CHOCO_SAD_ICON,
+							`Could not gift ${featherCount} feather.`,
+							undefined
+						);
+						return interaction.reply({
+							embeds: [EMBED],
+							ephemeral: true
+						});
 					}
 
-					const CARD_EMBED_SINGLE= new EmbedBuilder()
-						.setTitle("Chocobo Feathers Giveaway!")
-						.setColor(defaults.COLOR)
-						.setDescription(`Gifted ${featherCount} of my ${category} Feathers to ${user}, kweh~ :heart:`)
-						.setThumbnail(defaults.FEATHER_ICON);
-						
+					const userFeathers = await Feathers.findFeathersByGuildMember(guildId, user.id);
+					console.log("what is this:", userFeathers)
+
+					// ASSIGN ROLE
+					const ASSIGN_ROLE = userFeathers && userFeathers !== null && checkFeathersLimit(regGuild, userFeathers, category);
+					if(ASSIGN_ROLE) {
+						console.log(ASSIGN_ROLE);
+						try {
+							let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
+							if (!role) {
+								role = await interaction.guild.roles.create({
+									name: ASSIGN_ROLE,
+									color: 'Grey', // Change this to your preferred color
+									permissions: [], // Add permissions if needed
+									reason: 'Role created automatically by Chocobob'
+								});
+							}
+
+							const randomTrophy = [
+								"https://res.cloudinary.com/mediocre/image/upload/v1534735796/ofyr2erfhympnucdovnc.png",
+								"https://pbs.twimg.com/profile_images/958522091283791872/zqS5vca_.jpg",
+								"https://media.cmsmax.com/ticydm4kh3ezejhlvv1wi/thumbs/dtrf19ab-cvideo-1.jpg",
+								"https://image.freepik.com/free-vector/classic-video-game-trophy_24911-47180.jpg"
+							];
+
+							// Adding the role to the user
+							const member = await interaction.guild.members.fetch(user.id);
+							await member.roles.add(role);
+							const EMBED = customEmbedBuilder(
+								"Participation is Cool!",
+								defaults.CHOCO_HAPPY_ICON,
+								`You recieved an achievement in ${interaction.guild.name}, and have been assigned "${ASSIGN_ROLE}." Congratulations!`,
+								undefined,
+								undefined,
+								undefined,
+								randomTrophy[Math.floor(Math.random() * randomTrophy.length)]
+							);
+							await interaction.user.send({
+								embeds: [EMBED]
+							});
+						} catch (error) {
+							console.error('Auto role for feather category failed: ', error);
+						}
+					}
+
+					const EMBED = customEmbedBuilder(
+						"Chocobo Feathers Giveaway!",
+						defaults.FEATHER_ICON,
+						`Gifted ${featherCount} of my ${category} Feathers to ${user}, kweh~ :heart:`
+					);
 					return interaction.reply({
-						embeds: [CARD_EMBED_SINGLE],
+						embeds: [EMBED]
 					});
 				}
 			}

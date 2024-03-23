@@ -13,7 +13,7 @@ const guildSchema = new Schema({
         type: Array,
         default: [
             { cat: "Combat", role: "Warrior", limit: 1 }, 
-            { cat: "Crafting", role: "Santa's Helper", limit: 1 }, 
+            { cat: "Crafting", role: "Santa Helper", limit: 1 }, 
             { cat: "Chaos", role: "Gremlin", limit: 1 }, 
             { cat: "Dedication", role: "Number One Fan", limit: 1 }, 
             { cat: "Gathering", role: "Janitor", limit: 1 },

@@ -35,20 +35,23 @@ Feathers.giveFeathersByGuildMember = async function (guildId, member, featherCou
         return false;
     } else {
         let catValue = "";
-        const category_choice = defaults.FEATHER_CATEGORIES.find(obj => { return Object.keys(obj)[0] === category; });
+        const category_choice = defaults.FEATHER_CATS.filter(cats => cats.cat === category);
         if(category_choice) {
-            catValue = Object.values(category_choice)[0];
+            catValue = `cat_${category_choice[0].cat.toLowerCase()}`;
         } else {
             console.error(`Invalid category choice.`);
             return false;
         }
+
+        console.log("final:", catValue);
         (member || []).map( async (user) => {
             // Check if user already has existing feathers
             const existingUserFeathers = await this.findOne({ guildId: guildId, memberId: user });
 
             // User exists and has feathers
             if(existingUserFeathers && existingUserFeathers !== null) {
-                await this.updateOne({ guildId: guildId, memberId: user }, { $inc: { "totalFeathers": 1, [catValue]: 1} }, { $set: { lastCategory: category, sender: sender } });
+                CommandAudit.createAudit(guildId, sender, "givefeathers");
+                return await this.findOneAndUpdate({ guildId: guildId, memberId: user }, { $inc: { "totalFeathers": 1, [catValue]: 1},  $set: { lastCategory: category, sender: sender } }, { new: true} );
             } else { // User does not exist, create a document for them
                 const newFeatheredUser = new Feathers({ 
                     guildId:        guildId,
@@ -61,11 +64,11 @@ Feathers.giveFeathersByGuildMember = async function (guildId, member, featherCou
                 newFeatheredUser[catValue] = featherCount;
 
                 await newFeatheredUser.save();
+                CommandAudit.createAudit(guildId, sender, "givefeathers");
+                return newFeatheredUser;
             }
         });
-        CommandAudit.createAudit(guildId, sender, "givefeathers");
     }
-    return true;
 }
 
 module.exports = Feathers;

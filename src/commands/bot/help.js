@@ -93,7 +93,7 @@ const defaults = require('../../functions/tools/defaults.json');
             { name: ' ', value: 'All actions made by Chocobob require either a command or a command ran by a server moderator. Any data saved is strictly to log the execution of an action and the response created by Chocobob. Message history that is unrelated to a command will not and will never be saved.' },
             { name: 'Chocobob Bot Details', value: 'Chocobob#9508 is developed and maintained by Blythe#6060. It relies heavily on FFXIVAPI, Lodestone API, and Dalamund Bridge. If you find that Chocobob is incorrectly using your art, is acting unpredictable, or could be improved, please DM Blythe#6060.'}
         );
-    const EMBEDS = [ BOT_EMBED, SERVER_EMBED, ECONOMY_EMBED, FREECOMPANY_EMBED, FUN_EMBED, DB_EMBED ];
+    const EMBEDS = [ BOT_EMBED, SERVER_EMBED, FREECOMPANY_EMBED, FUN_EMBED, DB_EMBED ];
     
     module.exports = {
         data: new SlashCommandBuilder()

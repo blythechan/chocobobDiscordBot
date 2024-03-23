@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const defaults = require('../tools/defaults.json');
+const defaults = require('../../functions/tools/defaults.json');
 
 /**
  * Create an embed.
@@ -12,7 +12,7 @@ const defaults = require('../tools/defaults.json');
  * @param {String} image 
  * @param {String} footer 
  */
-export async function customEmbedBuilder(title, thumbnail, description, fields, footer, url, image) {
+function customEmbedBuilder(title, thumbnail, description, fields, footer, url, image) {
     const embed = new EmbedBuilder()
         .setColor(defaults.COLOR);
     
@@ -29,7 +29,7 @@ export async function customEmbedBuilder(title, thumbnail, description, fields, 
     }
 
     if(thumbnail) {
-        embed.thumbnail(thumbnail);
+        embed.setThumbnail(thumbnail);
     }
 
     if(image) {
@@ -48,3 +48,5 @@ export async function customEmbedBuilder(title, thumbnail, description, fields, 
 
     return embed;
 }
+
+module.exports = { customEmbedBuilder };
