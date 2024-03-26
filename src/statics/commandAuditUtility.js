@@ -1,6 +1,12 @@
 const CommandAudit = require('../schemas/commandAudit');
 const keepAuditAlive = ["givefeathers", "nominate"];
 
+/**
+ * Retrieves a singular record from commandAudit collection
+ * @param {String} guildId Obtains the server's identifier
+ * @param {String} memberId Obtains a server member's identifier
+ * @param {String} command Obtains the user's last command
+ */
 CommandAudit.retrieveCommandAudit = async function (guildId, command, latest) {
     if(!guildId || !command) {
         console.error(`Invalid request.`);
@@ -13,6 +19,13 @@ CommandAudit.retrieveCommandAudit = async function (guildId, command, latest) {
     }
 }
 
+/**
+ * Creates a record for command audits
+ * @param {String} guildId Obtains the server's identifier
+ * @param {String} memberId Obtains a server member's identifier
+ * @param {String} command Obtains the user's last command
+ * @param {String} details Used to provided additional information like subcommands
+ */
 CommandAudit.createAudit = async function(guildId, memberId, command, details) {
     if(!guildId || !command) {
         console.error(`Invalid request.`);

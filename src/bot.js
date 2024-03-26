@@ -4,7 +4,6 @@ const { connect } = require('mongoose');
 const { Client, Collection, Events, GatewayIntentBits, Partials } = require('discord.js');
 const fs = require('fs');
 const Nominations = require ('../src/statics/nominationsUtility');
-const Feathers = require ('../src/statics/feathersUtility');
 
 const client = new Client({ 
     intents: [

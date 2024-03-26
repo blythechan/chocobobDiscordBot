@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, ChannelType } = require('discord.js');
 const Feathers = require ('../../statics/feathersUtility');
 const Guild = require('../../schemas/guilds');
 const CommandAudit = require('../../statics/commandAuditUtility');

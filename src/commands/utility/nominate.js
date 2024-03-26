@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder, Discord } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const Guilds = require ('../../statics/guildUtility');
 const Nominations = require ('../../statics/nominationsUtility');
 const CommandAudit = require('../../statics/commandAuditUtility');

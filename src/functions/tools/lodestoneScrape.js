@@ -342,7 +342,6 @@ scrapeLodestoneBioBycharacterId = async function (id) {
 }
 
 
-
 module.exports = scrapeLodestoneByCharacterId;
 module.exports = scrapeLodestoneByFreeCompanyId;
 module.exports = scrapeLodestoneBioBycharacterId;

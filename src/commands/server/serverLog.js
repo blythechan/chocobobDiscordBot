@@ -1,5 +1,4 @@
 const fs = require('fs');
-const mongoose = require('mongoose');
 const Guilds = require('../../schemas/guilds');
 const AdministrativeAction = require('../../schemas/administrativeAction');
 const { SlashCommandBuilder, AttachmentBuilder, PermissionFlagsBits } = require('discord.js');

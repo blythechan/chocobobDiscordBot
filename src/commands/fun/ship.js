@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, roleMention, userMention, AttachmentBuilder } = require('discord.js');
+const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const Canvas = require('@napi-rs/canvas');
 
 const applyText = (canvas, text) => {

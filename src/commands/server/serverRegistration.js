@@ -2,8 +2,7 @@ const Guilds = require ('../../statics/guildUtility');
 const AdministrativeAction = require('../../schemas/administrativeAction');
 const defaults = require('../../functions/tools/defaults.json');
 const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
-const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
-const mongoose = require('mongoose');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -45,7 +44,7 @@ module.exports = {
         if(!userIsAdmin) {
             return interaction.reply({ content: 'Kweh! This command is restricted to server administrators only.', ephemeral: false });
         }
-		
+
 		// REGISTER CONFIG
 		const choice = 					interaction.options.getString('register');
 		const status = 					interaction.options.getBoolean('status');

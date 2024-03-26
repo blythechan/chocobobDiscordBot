@@ -1,11 +1,4 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const lodestoneTopics = [
-    "companion", "game", "psn", "lodestone", "mog"
-];
-
-const lodestoneTopicsCap = [
-    "Companion", "Game", "PSN", "Lodestone", "Mog"
-];
 
 const lodestoneTopicThumbnails = [
     "https://ffxiv.gamerescape.com/w/images/9/98/Chocobo_Icon_3.png",
