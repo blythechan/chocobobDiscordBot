@@ -8,11 +8,10 @@ module.exports = {
         .setDescription('Modify a user role. Server Administrators command.')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addUserOption(option => option.setName('user').setDescription('Which user do you want to involve?').setRequired(true))
-        .addStringOption(option => option.setName('action').setDescription('Remove/Add a role, Ban, or Kick').setAutocomplete(true).setRequired(true))
-        .addRoleOption(option => option.setName('role').setDescription('Role to Remove/Add').setRequired(true))
-        .addStringOption(option => option.setName('reason').setDescription('Reason for permission change?').setRequired(true))
-        .addBooleanOption(option => option.setName('notify').setDescription('Notify user of reason?').setRequired(true))
-        .addBooleanOption(option => option.setName('ephemeral').setDescription('Only show the response to you?').setRequired(true)),
+        .addStringOption(option => option.setName('action').setDescription('Remove/Add a role, Ban, or Kick').setAutocomplete(true).setRequired(false))
+        .addRoleOption(option => option.setName('role').setDescription('Role to Remove/Add').setRequired(false))
+        .addStringOption(option => option.setName('reason').setDescription('Reason for permission change?').setRequired(false))
+        .addBooleanOption(option => option.setName('notify').setDescription('Notify user of reason?').setRequired(false)),
     async autocomplete(interaction, client) {
         const focusedValue = interaction.options.getFocused();
         const choices = ["Add", "Remove", "Ban", "Kick"];
@@ -20,6 +19,12 @@ module.exports = {
         await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
     },
     async execute(interaction, client) {
+
+        let author = interaction.guild.members.cache.get(interaction.member.id);
+		const userIsAdmin = author.permissions.has('ADMINISTRATOR');
+        if(!userIsAdmin) {
+            return interaction.reply({ content: 'Kweh! This command is restricted to server administrators only.', ephemeral: false });
+        }
 
         // Check if the bot has permission to manage roles
         if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
@@ -33,7 +38,7 @@ module.exports = {
         const role = interaction.options.getRole('role');
         const reason = interaction.options.getString('reason');
         const notifyUser = interaction.options.getBoolean('notify');
-        const ephemeral = interaction.options.getBoolean('ephemeral');
+        const ephemeral = true;
 
         if (!role) return interaction.reply({ content: `Action failed. Invalid role of "${role}". That role does not exist in the server. Role names must be exact.`, ephemeral: ephemeral });
 

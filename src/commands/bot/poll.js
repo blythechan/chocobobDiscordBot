@@ -3,8 +3,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 module.exports = {
       data: new SlashCommandBuilder()
             .setName('poll')
-            .setDescription('Create a poll with up to 4 reactions. Server Administrators command.')
-            .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+            .setDescription('Create a poll with up to 4 reactions.')
             .addStringOption(option => option.setName('description').setDescription('What do you want the poll to say?').setRequired(true))
             .addStringOption(option => option.setName('emotea').setDescription('First emote.').setRequired(true))
             .addStringOption(option => option.setName('emoteb').setDescription('Second emote. Leave blank if not required'))

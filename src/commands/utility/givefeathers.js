@@ -50,16 +50,21 @@ module.exports = {
 				: undefined;
 			const sender = interaction.guild.members.cache.get(interaction.member.id);
 			const featherCount = 1;
+			
+			let author = interaction.guild.members.cache.get(interaction.member.id);
+			const userIsAdmin = author.permissions.has('ADMINISTRATOR');
 
 			// // Verify command is past cooldown
 			const verifyCooldown = await CommandAudit.checkCooldown(guildId, sender, "givefeathers", "12 hours");
-			if(!verifyCooldown && interaction.member.id !== "139920603711930368") {
-				const getExpiration = await CommandAudit.retrieveCommandAudit(guildId, "givefeathers", true);
-				const cooldownFinished = new Date(getExpiration.createdAt);
-				cooldownFinished.setHours(cooldownFinished.getHours() + 12);
-				const messagecontent = defaults.DEFAULT_RESPONSES[0].replace("COOLDOWN_LIMIT", "12").replace("TIMESPAN", cooldownFinished);
-				await interaction.reply({ content: messagecontent, ephemeral: true });
-				return;
+			if(!verifyCooldown) {
+				if(!userIsAdmin) {
+					const getExpiration = await CommandAudit.retrieveCommandAudit(guildId, "givefeathers", true);
+					const cooldownFinished = new Date(getExpiration.createdAt);
+					cooldownFinished.setHours(cooldownFinished.getHours() + 12);
+					const messagecontent = defaults.DEFAULT_RESPONSES[0].replace("COOLDOWN_LIMIT", "12").replace("TIMESPAN", cooldownFinished);
+					await interaction.reply({ content: messagecontent, ephemeral: true });
+					return;
+				}
 			}
 
 			// User isn't gifting anyone feathers

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, Discord } = require('discord.js');
 const Guilds = require ('../../statics/guildUtility');
 const Nominations = require ('../../statics/nominationsUtility');
+const CommandAudit = require('../../statics/commandAuditUtility');
 const defaults = require('../../functions/tools/defaults.json');
 
 module.exports = {
@@ -11,6 +12,24 @@ module.exports = {
 		.addUserOption(option => option.setName('user').setDescription('Which user do you want to nominate?').setRequired(false)),
 	async execute(interaction) {
 		const guildProfile = await Guilds.findByGuild(interaction.guild.id);
+
+		let author = interaction.guild.members.cache.get(interaction.member.id);
+		const userIsAdmin = author.permissions.has('ADMINISTRATOR');
+
+		// Verify command is past cooldown
+		const verifyCooldown = await CommandAudit.checkCooldown(guildId, author, "nominate", "5 minutes");
+		if(!verifyCooldown) {
+			if(!userIsAdmin) {
+				const messagecontent = defaults.DEFAULT_RESPONSES[1].replace("COOLDOWN_LIMIT", "5");
+				const CARD_EMBED_ERROR1 = new EmbedBuilder()
+					.setColor(defaults.COLOR)
+					.setDescription(messagecontent)
+					.setThumbnail(defaults.CHOCO_SAD_ICON);
+				await interaction.editReply({ embeds: [CARD_EMBED_ERROR1] });
+				return;
+			}
+		}
+
 		if(!guildProfile) {
 			const CARD_EMBED_STATUS1 = new EmbedBuilder()
 				.setTitle("Server Not Registered with Chocobo Stall!")
@@ -37,7 +56,6 @@ module.exports = {
 		const removenoms = interaction.options.getString("removenomination");
 		if(removenoms && removenoms !== null) {
 			let member = interaction.guild.members.cache.get(interaction.member.id);
-			const userIsAdmin = member.permissions.has('ADMINISTRATOR');
 			const nominationDocument = await Nominations.findNominationById(guildProfile.guildId, removenoms);
 			// Nomination document exists
 			if(nominationDocument && nominationDocument !== null) {
@@ -158,6 +176,7 @@ module.exports = {
 				fetchReply: true
 			});
 
+            CommandAudit.createAudit(guildId, author, "nominate");
 			await Nominations.updateNominationWithMessageId(result._id, message.id);
 
 			message.react('\u2611');

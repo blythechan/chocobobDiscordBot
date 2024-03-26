@@ -70,5 +70,23 @@
         "Determination",
         "Skill Speed",
         "Spell Speed"
+    ],
+    "FOCUS": [
+        { "Role-playing": "https://lds-img.finalfantasyxiv.com/h/9/2RIcg3Swu7asLE9w5hF11Gm1Sg.png" },
+        { "Dungeons":  "https://lds-img.finalfantasyxiv.com/h/7/jSYmuDYlpVzQ98RA3VhBQWY5PA.png" },
+        { "PvP":  "https://lds-img.finalfantasyxiv.com/h/D/hXSGh69WuUbiC5NmlZhDyaO2g8.png" },
+        { "Leveling": "https://lds-img.finalfantasyxiv.com/h/n/5Y0D3iH7ngHlRpv9-KJKalt3_o.png" },
+        { "Guildhests": "https://lds-img.finalfantasyxiv.com/h/C/wiboHfsKd8h_tmbJkNY38w2T8A.png" },
+        { "Casual": "https://lds-img.finalfantasyxiv.com/h/t/Se_50UHNcTNjytzG8olOSGq3MI.png" },
+        { "Trials": "https://lds-img.finalfantasyxiv.com/h/P/ydn7ovgdfDc3MocTJV0vP48l4E.png" },
+        { "Hardcore": "https://lds-img.finalfantasyxiv.com/h/i/1ZVA5nBRhczPW2kJWBJk5Jkz6o.png" },
+        { "Raids": "https://lds-img.finalfantasyxiv.com/h/R/R7mn0-cTBIhT8CcxbtDB-YuPUI.png" }
+    ],
+    "SEEKING": [
+        { "Tank": "https://lds-img.finalfantasyxiv.com/h/x/VUfyJ-2iArKs72p4putqJewSgU.png" },
+        { "Crafter": "https://lds-img.finalfantasyxiv.com/h/w/h-PrIjVyD8Uy9ndk49alidJYSM.png" },
+        { "Healer": "https://lds-img.finalfantasyxiv.com/h/A/a8JOc9-8I-ATxTnT3BAkI0MTsA.png" },
+        { "Gatherer": "https://lds-img.finalfantasyxiv.com/h/1/7Fd00rEgUDpmWFVulcouYytj54.png" },
+        { "DPS": "https://lds-img.finalfantasyxiv.com/h/d/qXomRVXuqEzMLXk2ncLeoFTFYs.png" }
     ]
 }

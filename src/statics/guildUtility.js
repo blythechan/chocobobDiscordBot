@@ -41,7 +41,7 @@ Guilds.registerGuild = async function (interaction) {
 
 /**
  * Update a guild's registered roles that bot uses for various administrative commands
- * @param {String} guildId Obtain the server's identifier
+ * @param {String} docId Obtain the document identifier
  * @param {Object} content Obtains an object of roles to replace and register in db
  */
 Guilds.updateGuildRegisteredRoles = async function (docId, content ) {
@@ -57,6 +57,26 @@ Guilds.updateGuildRegisteredRoles = async function (docId, content ) {
     );
 
     return await this.findOne({ _id: docId }).select("rolesRegistered");
+}
+
+/**
+ * Update a guild's free company Lodestone id
+ * @param {String} docId Obtain the server's identifier
+ * @param {Object} fcId Obtains an object of roles to replace and register in db
+ */
+Guilds.updateGuildFreeCompanyId = async function (docId, fcId) {
+    if(!docId) {
+        console.error(`Invalid request.`);
+        return false;
+    }
+
+    await Guilds.findOneAndUpdate(
+        { _id: docId },
+        {$set: { fcId: fcId || "" } },
+        { new: true }
+    );
+
+    return await this.findOne({ _id: docId }).select("fcId");
 }
 
 /**

@@ -1,109 +1,209 @@
-const fs = require('node:fs');
-const { Client, GatewayIntentBits, Collection, AttachmentBuilder, SlashCommandBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Embed } = require("discord.js");
-const paginationEmbed = require('discordjs-v14-pagination');
-require("dotenv").config();
+const { AttachmentBuilder, SlashCommandBuilder, hideLinkEmbed  } = require("discord.js");
+const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
+const CommandAudit = require('../../statics/commandAuditUtility');
+const Guilds = require ('../../statics/guildUtility');
+const defaults = require('../../functions/tools/defaults.json');
+const scrapeLodestoneByFreeCompanyId = require('../../functions/tools/lodestoneScrape');
+const Canvas = require('@napi-rs/canvas');
 
-const XIVAPI = require('@xivapi/js');
-const xiv = new XIVAPI({
-    private_key: process.env.FFXIV_API_KEY,
-    language: 'en',
-    snake_case: true
-});
+const applyText = (canvas, text) => {
+    const context = canvas.getContext('2d');
+    let fontSize = 60;
 
-const firstPageButton = new ButtonBuilder()
-    .setCustomId('first')
-    .setEmoji('1029435230668476476')
-    .setStyle(ButtonStyle.Primary);
+    do {
+        context.font = `${fontSize -= 10}px Calibri`;
+    } while (context.measureText(text).width > canvas.width - 200);
 
-const previousPageButton = new ButtonBuilder()
-    .setCustomId('previous')
-    .setEmoji('1029435199462834207')
-    .setStyle(ButtonStyle.Primary);
+    return context.font;
+};
 
-const nextPageButton = new ButtonBuilder()
-    .setCustomId('next')
-    .setEmoji('1029435213157240892')
-    .setStyle(ButtonStyle.Primary);
+const applySubText = (canvas, text) => {
+    const context = canvas.getContext('2d');
+    let fontSize = 80;
 
-const lastPageButton = new ButtonBuilder()
-    .setCustomId('last')
-    .setEmoji('1029435238948032582')
-    .setStyle(ButtonStyle.Primary);
+    do {
+        context.font = `${fontSize}px Constantia`;
+    } while (context.measureText(text).width > canvas.width - 200);
 
-const buttons = [ firstPageButton, previousPageButton, nextPageButton, lastPageButton ];
-
-function createEmbedPages(data, color, title, image) {
-    const pageSize = 25;
-    const pageCount = Math.ceil(data.length / pageSize);
-    const embeds = [];
-    for (let i = 0; i < pageCount; i++) {
-        const start = i * pageSize;
-        const end = start + pageSize;
-        const pageData = data.slice(start, end);
-        const embed = new EmbedBuilder()
-            .setColor(color)
-            .setTitle(`${title} Page ${i + 1}/${pageCount}`)
-            .setDescription(pageData.join('\n'))
-            .setImage(image);
-        embeds.push(embed);
-    }
-
-    return embeds;
-}
+    return context.font;
+};
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('fcstats')
 		.setDescription('Retrieve FC statistics')
-            .addStringOption(option => option.setName('fc').setDescription('The Free Company full name to request statistics from').setRequired(true))
-            .addStringOption(option => option.setName('server').setDescription('The Free Company full name to request statistics from').setRequired(true))
-            .addBooleanOption(option => option.setName('fcstatsonly').setDescription('Only display FC stats, ignore FC members.')),
+            .addStringOption(option => option.setName('fc').setDescription('The Free Company Id to request a stat card for')),
 	async execute(interaction) {
         try {
-        await interaction.deferReply();
-        const fc = interaction.options.getString('fc');
-        const fcServer = interaction.options.getString('server');
-        const fcstatsonly = interaction.options.getBoolean('fcstatsonly');
-		//find the FC with its name and server
-        let res = await xiv.freecompany.search(fc, {server: fcServer});
-        //get the FC ID
-        let id = res.results[0].id;
-        //get and return fc members
-        let userFC = await xiv.freecompany.get(id, {data: 'FCM'});
-        const fcm = userFC.free_company_members;
-        //const fcs = await xiv.freecompany.get(id);
-        const fcRanks = [];
-        const data = fcm.map(player => {
-            let rank = player.rank;
-            fcRanks.push(rank);
-            return `${player.name} - ${player.rank}`;
-        });
+            await interaction.deferReply();
 
-        const uniqueRanks = fcRanks.reduce((acc, val) => {
-            acc[val] = acc[val] === undefined ? 1 : acc[val] += 1;
-            return acc;
-          }, {});
+            const guildId =                 interaction.guild.id;
+            const guildProfile = 			await Guilds.findByGuild(interaction.guild.id);
+            const author =                  interaction.guild.members.cache.get(interaction.member.id);
+            const fc =                      interaction.options.getString('fc') || guildProfile.fcId;
 
-        if(!fcstatsonly) {
-            const embeds = createEmbedPages(data, "#f2f28a", `FC Member Retrieval`, userFC.free_company.crest[2]);
-            paginationEmbed(interaction, embeds, buttons, 100000);
+            if((!fc || fc.trim() === "") && (!guildProfile.fcId || guildProfile.fcId === "")) {
+                const EMBED = customEmbedBuilder(
+                    "Free Company Lodestone Id was not recognized."
+                );
+                return interaction.editReply({
+                    embeds: [EMBED],
+                    ephemeral: true
+                });
+            }
+            
+            // Verify command is past cooldown
+            const verifyCooldown = await CommandAudit.checkCooldown(guildId, author, "fcstats", "5 minutes");
+            if(!verifyCooldown) {
+                const messagecontent = defaults.DEFAULT_RESPONSES[1].replace("COOLDOWN_LIMIT", "5");
+                const CARD_EMBED_ERROR1 = new EmbedBuilder()
+                    .setColor(defaults.COLOR)
+                    .setDescription(messagecontent)
+                    .setThumbnail(defaults.CHOCO_SAD_ICON);
+                await interaction.editReply({ embeds: [CARD_EMBED_ERROR1] });
+                return;
+            }
+
+            const finalRes = await scrapeLodestoneByFreeCompanyId(fc);
+            if(!finalRes) {
+                await interaction.editReply({ content: "Error", ephemeral: true });
+            }
+
+            const canvas = Canvas.createCanvas(2000, 873);
+            const context = canvas.getContext('2d');
+
+            // Backdrop
+            context.rect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = "rgba(45, 46, 48, 0.8)";
+            context.fill();
+
+            // Top bar
+            context.beginPath();
+            context.fillStyle = "#0f0821";
+            context.fillRect(0, 0, 2000, 150);
+            context.stroke();
+            context.closePath();
+
+            // FC Crest
+            const portrait1 = await Canvas.loadImage(finalRes.fc.crest[0]);
+            context.drawImage(portrait1, 0, 0, 150, 150);
+            const portrait2 = await Canvas.loadImage(finalRes.fc.crest[1]);
+            context.drawImage(portrait2, 0, 0, 150, 150);
+            const portrait3 = await Canvas.loadImage(finalRes.fc.crest[2]);
+            context.drawImage(portrait3, 0, 0, 150, 150);
+
+            // FC Name
+            const fcName = `${finalRes.fc.name} ${finalRes.fc.tag}`;
+            context.font = applySubText(canvas, fcName);
+            context.fillStyle = 'WHITE';
+            context.fillText(fcName, 155, 70);
+
+            // Slogan
+            const tag = finalRes.fc.slogan[0];
+            context.font = applyText(canvas, tag);
+            context.fillStyle = 'WHITE';
+            context.fillText(tag, 165, 120);
+
+            // Formed
+            const formed = `Founded on ${finalRes.fc.formed[0]}`;
+            context.font = applyText(canvas, formed);
+            context.fillStyle = 'WHITE';
+            context.fillText(formed, 15, 200);
+
+            // Recruitment Status
+            const recruitment = `Recruitment ${finalRes.fc.recruitment}`;
+            context.font = applyText(canvas, recruitment);
+            context.fillStyle = 'WHITE';
+            context.fillText(recruitment, 15, 265);
+
+            // Leader
+            const leader = `Captain: ${finalRes.members.founder[0]}`;
+            context.font = applyText(canvas, leader);
+            context.fillStyle = 'WHITE';
+            context.fillText(leader, 1300, 200);
+
+            // Members
+            const members = `Members: ${finalRes.members.memberCount[0].trim()}/512`;
+            context.font = applyText(canvas, members);
+            context.fillStyle = 'WHITE';
+            context.fillText(members, 1300, 265);
+
+            // World rank
+            const worldRank1 = finalRes.fc.world_rank[0][0];
+            context.font = applyText(canvas, worldRank1);
+            context.fillStyle = 'WHITE';
+            context.fillText(worldRank1, 15, 355);
+            const worldRank2 = finalRes.fc.world_rank[0][1];
+            context.font = applyText(canvas, worldRank2);
+            context.fillStyle = 'WHITE';
+            context.fillText(worldRank2, 15, 420);
+
+
+            // Focus and Seeking bar
+            context.beginPath();
+            context.fillStyle = "#0f0821";
+            context.fillRect(0, 600, 2000, 300);
+            context.stroke();
+            context.closePath();
+
+            // World and address
+            const world = `${finalRes.fc.gc[1]}; ${finalRes.fc.address[0]}`;
+            context.font = applyText(canvas, world);
+            context.fillStyle = 'WHITE';
+            context.fillText(world, 15, 590);
+
+            // Focus
+            if(finalRes.fc.focus && finalRes.fc.focus[0]) {
+                let attrX = 5;
+                let attrY = 550;
+                let focusCounter = 1;
+                for await (const obj of finalRes.fc.focus[0]) {
+                    if (focusCounter % 3 === 1) {
+                        attrY = attrY + 100;
+                        attrX = 100;
+                    }
+
+                    const focusObj = defaults.FOCUS.find(item => obj in item);
+                    const focusIcon = await Canvas.loadImage(focusObj[obj]);
+                    context.drawImage(focusIcon, attrX, attrY, 95, 95);
+
+                    attrX = attrX + 90;
+                    focusCounter++;
+                };
+            }
+
+            // Seeking
+            if(finalRes.fc.focus && finalRes.fc.focus[1]) {
+                let attrX = 1400;
+                let attrY = 550;
+                let focusCounter = 1;
+                for await (const obj of finalRes.fc.focus[1]) {
+                    if (focusCounter % 3 === 1) {
+                        attrY = attrY + 100;
+                        attrX = 1420;
+                    }
+
+                    const focusObj = defaults.SEEKING.find(item => obj in item);
+                    const focusIcon = await Canvas.loadImage(focusObj[obj]);
+                    context.drawImage(focusIcon, attrX, attrY, 95, 95);
+
+                    attrX = attrX + 90;
+                    focusCounter++;
+                };
+            }
+
+            const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'selfportrait.png' });
+            const dataUsage = "\n Powered by Lodestone";
+            CommandAudit.createAudit(guildId, author, "fcstats");
+            
+            const url = `https://na.finalfantasyxiv.com/lodestone/freecompany/${fc}/`;
+            const hiddenEmbed = hideLinkEmbed(url);
+            await interaction.editReply({ content: ` :mag: Click the card to maximize\nFC Profile: ${hiddenEmbed}  ${dataUsage}`, files: [attachment] });
+
+
+        } catch (error) {
+            console.log("Encountered an error during fc retrieval: ", error);
+            await interaction.editReply({ content: "Error", ephemeral: true });
         }
-        await interaction.editReply(`
-        ${fcstatsonly ? "*Displaying FC Info Only*" : "*FC Info*"}
-        Name: ${userFC.free_company.name} <${userFC.free_company.tag}>
-        Slogan: ${userFC.free_company.slogan}
-        Location: ${userFC.free_company.server}; ${userFC.free_company.estate.plot}
-        Allied: ${userFC.free_company.grand_company}
-        Formed: ${new Date(userFC.free_company.formed*1000)}
-        Latest Activity: ${new Date(userFC.free_company.parse_date*1000)};
-        Recruitment Status: ${userFC.free_company.recruitment}
-        Total Members: ${userFC.free_company.active_member_count} / 512
-        Ranks: ${Object.entries(uniqueRanks).map(x => ` ${x[0]}`)}
-        Total Ranks: ${Object.keys(uniqueRanks).length} / 15
-        Rank Breakdown: ${Object.entries(uniqueRanks).map(x => ` ${x[0]}: ${x[1]}`)}`);
-        } catch (ex) {
-            console.error(ex);
-            await interaction.editReply(`Something went wrong, kweh! ${ex.message}`);
-        }
-	},
+    }
 };

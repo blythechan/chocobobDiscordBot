@@ -12,6 +12,13 @@ module.exports = {
         .addStringOption(option => option.setName('reason').setDescription('Reason for message purge?')),
     async execute(interaction) {
 
+        
+		let author = interaction.guild.members.cache.get(interaction.member.id);
+		const userIsAdmin = author.permissions.has('ADMINISTRATOR');
+        if(!userIsAdmin) {
+            return interaction.reply({ content: 'Kweh! This command is restricted to server administrators only.', ephemeral: false });
+        }
+
         // Check if the bot has permission to manage roles
         if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
             return interaction.reply({ content: 'I do not have permission to manage messages.', ephemeral: false });

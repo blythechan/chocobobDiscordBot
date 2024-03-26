@@ -6,7 +6,7 @@ const defaults = require('../../functions/tools/defaults.json');
         .setColor(defaults.COLOR)
         .setDescription(`**:gear: Available utility commands**`)
         .addFields(
-            { name: 'Permissions', value: 'Command `/permissions user action reason notify ephemeral`' },
+            { name: 'Permissions', value: 'Command `/permissions user action reason notify`' },
             { name: ' ', value: 'Description: Add or removes a role for a user, kicks the user, or bans the user.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
@@ -32,16 +32,61 @@ const defaults = require('../../functions/tools/defaults.json');
             { name: ' ', value: 'Description: Allow Chocobob to log administrative actions, support FFXIV players with their Lodestone, and much more, by registering with Chocobob. "De-registering" with Chocobob will involve the removal of most if not all data related to your server.\n\nIt is **not** required to register with Chocobob, but some commands may not be available.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-            { name: 'Nominations', value: 'Command `/nominate user`' },
-            { name: ' ', value: 'Description: Nominate a user for a promotion. Requires server to be registered and server roles to be set with Chocobob.' },
+            { name: 'Server set Free Company Id', value: 'Command `/server freecompanyid`' },
+            { name: ' ', value: 'Description: Registers a FFXIV Free Company with a server to prevent having to repeat FC id for commands.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-            { name: 'Give Feathers', value: 'Command `/gifeveathers category user` or `/givefeathers category voicechannel' },
-            { name: ' ', value: 'Description: Recognize server participation or general good heartedness by giving a Chocobo Feather to one or more users.' },
+            { name: 'Set Server Roles', value: 'Command `/server setnomroles`' },
+            { name: ' ', value: 'Description: Allows nomination command to know which server roles to rely on when promoting.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Reset Server Roles', value: 'Command `/server clearnomroles`' },
+            { name: ' ', value: 'Description: Allows nomination command to know which server roles to rely on when promoting.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
             { name: 'Server Log', value: 'Command `/log channel`' },
             { name: ' ', value: 'Description: Retrieves the latest 50 logs pertaining to your server, and attempts to export it into a text file before sending it off to the specified text channel. Success response is ephemeral, but the export is visible to all depending on text channel.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+        );
+    
+    const NOMS_EMBED = new EmbedBuilder()
+        .setTitle(`Nomination Commands`)
+        .setColor(defaults.COLOR)
+        .setDescription(`**:couple_with_heart: Available nomination commands**`)
+        .addFields(
+            { name: 'Set Server Roles', value: 'Command `/server setnomroles`' },
+            { name: ' ', value: 'Description: Allows nomination command to know which server roles to rely on when promoting.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Reset Server Roles', value: 'Command `/server clearnomroles`' },
+            { name: ' ', value: 'Description: Allows nomination command to know which server roles to rely on when promoting.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Reset Nomination for User', value: 'Command `/removenomination`' },
+            { name: ' ', value: 'Description: Cancels and removes an existing or old nomination by its message Id. Example: `/removenomination <messageId>`.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Nominations', value: 'Command `/nominate user`' },
+            { name: ' ', value: 'Description: Nominate a user for a promotion. Requires server to be registered and server roles to be set with Chocobob.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+        );
+    const FEATHER_EMBED = new EmbedBuilder()
+        .setTitle(`Feather Commands`)
+        .setColor(defaults.COLOR)
+        .setDescription(`**:baby_chick: Available feather commands**`)
+        .addFields(
+            { name: 'Set Feathers Roles', value: 'Command `/featherroles`' },
+            { name: ' ', value: 'Description: Overwrites existing feather roles with your own. Example: `/featherroles Chaos:Gremlin`' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Set Feathers Role Limit', value: 'Command `/featherrolelimit`' },
+            { name: ' ', value: 'Description: Determines how many feathers are required before a user recieves that role. Example: `/featherrolelimit Chaos:920`' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Give Feathers', value: 'Command `/gifeveathers category user` or `/givefeathers category voicechannel' },
+            { name: ' ', value: 'Description: Recognize server participation or general good heartedness by giving a Chocobo Feather to one or more users.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
         );
@@ -54,19 +99,15 @@ const defaults = require('../../functions/tools/defaults.json');
             { name: ' ', value: 'Description: Lists Free Company data from FFFXIVAPI, and filters and paginates by 25 entries at a time. If two or more FCs share similar FC names, Chocobob will only retrieve the first result. Please be **specific**.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-            { name: 'Free Company Member Export', value: 'Command `/fcexport fc server channel`' },
-            { name: ' ', value: 'Description: Lists Free Company member names and rank in a CSV text file. If two or more FCs share similar FC names, Chocobob will only retrieve the first result. Please be **specific**.' },
-            { name: ' ', value: 'Status: :white_check_mark:' },
-            { name: ' ', value: ' ' },
             { name: 'Latest Lodestone News', value: 'Command `/lodestone lookup`' },
             { name: ' ', value: 'Description: Retrieves the latest or current news article depending on lookup. PST timezone enforced. Maintenance lookup assumed if no option is provided.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-            { name: 'Verify Character', value: 'Command `/verify server user`' },
+            { name: 'Verify Character', value: 'Command `/verify characterid`' },
             { name: ' ', value: 'Description: Assists with connecting and verifying a Discord user to their FFXIV Lodestone character. Used to determine roles, nicknames, and permissions within the server.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
-            { name: 'Who Am I', value: 'Command `/whoami charactername colorcode`' },
+            { name: 'Who Am I', value: 'Command `/whoami character`' },
             { name: ' ', value: 'Description: Displays one of your registered characters in a Character Card created by Chocobob Bot.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
             { name: ' ', value: ' ' },
@@ -83,6 +124,10 @@ const defaults = require('../../functions/tools/defaults.json');
             { name: 'Ship', value: 'Command `/ship shipUserA shipUserB`' },
             { name: ' ', value: 'Description: Jokingly determines a percentage of possibility between two users.' },
             { name: ' ', value: 'Status: :white_check_mark:' },
+            { name: ' ', value: ' ' },
+            { name: 'Bonk', value: 'Command `/bonk user`' },
+            { name: ' ', value: 'Description: Jokingly bonks a user.' },
+            { name: ' ', value: 'Status: :white_check_mark:' },
         );
     const DB_EMBED = new EmbedBuilder()
         .setTitle(`About Chocobob Bot`)
@@ -91,9 +136,9 @@ const defaults = require('../../functions/tools/defaults.json');
         .addFields(
             { name: 'Purpose and Promise of Chocobob', value: 'A fun Discord bot with various commands to not only entertain a Discord user but also assist a FFXIV user along their journey throughout Eorzea and beyond.' },
             { name: ' ', value: 'All actions made by Chocobob require either a command or a command ran by a server moderator. Any data saved is strictly to log the execution of an action and the response created by Chocobob. Message history that is unrelated to a command will not and will never be saved.' },
-            { name: 'Chocobob Bot Details', value: 'Chocobob#9508 is developed and maintained by Blythe#6060. It relies heavily on FFXIVAPI, Lodestone API, and Dalamund Bridge. If you find that Chocobob is incorrectly using your art, is acting unpredictable, or could be improved, please DM Blythe#6060.'}
+            { name: 'Chocobob Bot Details', value: 'Chocobob#9508 is developed and maintained by *blythechan*. It relies heavily on FFXIVAPI, Lodestone API, and Dalamund Bridge. If you find that Chocobob is incorrectly using your art, is acting unpredictable, or could be improved, please DM Blythe#6060.'}
         );
-    const EMBEDS = [ BOT_EMBED, SERVER_EMBED, FREECOMPANY_EMBED, FUN_EMBED, DB_EMBED ];
+    const EMBEDS = [ BOT_EMBED, SERVER_EMBED, NOMS_EMBED, FEATHER_EMBED, FREECOMPANY_EMBED, FUN_EMBED, DB_EMBED ];
     
     module.exports = {
         data: new SlashCommandBuilder()

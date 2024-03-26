@@ -3,6 +3,7 @@ const { Schema, model } = require('mongoose');
 const guildSchema = new Schema({
     guildId: String,
     guildName: String,
+    fcId: String,
     guildIcon: { type: String },
     registered: String,
     rolesRegistered: {

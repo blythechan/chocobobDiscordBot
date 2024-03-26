@@ -13,7 +13,10 @@ module.exports = {
 			.setDescription("Register or De-Register from Chocobob?")
 			.setAutocomplete(true)
 			.setRequired(false))
-		.addStringOption(option => option.setName("nominateroles")
+		.addStringOption(option => option.setName("freecompanyid")
+			.setDescription("Let Chocobob know your free company's Lodestone id to assist with lookups.")
+			.setRequired(false))
+		.addStringOption(option => option.setName("setnomroles")
 			.setDescription("To allow `/nominate` to determine server roles, mention the roles you want to register.")
 			.setRequired(false))
 		.addBooleanOption(option => option.setName("clearnomroles")
@@ -36,11 +39,20 @@ module.exports = {
 		await interaction.respond(filtered.map((choice ) => ({ name: choice , value: choice  })));
 	},
 	async execute(interaction) {
+
+        let author = interaction.guild.members.cache.get(interaction.member.id);
+		const userIsAdmin = author.permissions.has('ADMINISTRATOR');
+        if(!userIsAdmin) {
+            return interaction.reply({ content: 'Kweh! This command is restricted to server administrators only.', ephemeral: false });
+        }
+		
 		// REGISTER CONFIG
 		const choice = 					interaction.options.getString('register');
 		const status = 					interaction.options.getBoolean('status');
+		// FC THINGS
+		const fcId =					interaction.options.getString("freecompanyid");
 		// NOMINATE CONFIG
-		const nomsPermissionList = 		interaction.options.getString('nominateroles');
+		const nomsPermissionList = 		interaction.options.getString('setnomroles');
 		const clearnomroles = 			interaction.options.getBoolean('clearnomroles');
 		// GIVEFEATHERS CONFIG
 		const featherroles =			interaction.options.getString('featherroles');
@@ -69,13 +81,26 @@ module.exports = {
 		}
 		//#endregion
 
+		//#region Register free company (FC) id
+		if(fcId && !choice && !status) {
+			await Guilds.updateGuildFreeCompanyId(guildProfile.id, fcId);
+			const EMBED = customEmbedBuilder(
+				"Free Company Lodestone Id saved!"
+			);
+			return interaction.reply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
+		}
+		//#endregion
+
 		//#region clear nomination roles
 		if(clearnomroles === true) {
 			await Guilds.updateGuildRegisteredRoles(guildProfile.id, []);
-				const EMBED = customEmbedBuilder(
-					"Roles cleared for nominations in Chocobo Stall",
-				);
-				
+			const EMBED = customEmbedBuilder(
+				"Roles cleared for nominations in Chocobo Stall",
+			);
+			
 			return interaction.reply({
 				embeds: [EMBED],
 				ephemeral: true
@@ -109,7 +134,7 @@ module.exports = {
 		}
 		//#endregion
 
-		//#region Register nomination roles `/nominateroles`
+		//#region Register nomination roles `/setnomroles`
 		if(nomsPermissionList) {
 			const roleIdRegex = /<@&(\d+)>/g;
 			let rolesToRegisterArray = [];
