@@ -5,10 +5,23 @@ const guildSchema = new Schema({
     guildName: String,
     fcId: String,
     guildIcon: { type: String },
+    allowHeadpatRoles: {
+        type: Boolean,
+        default: true
+    },
     registered: String,
     rolesRegistered: {
         type: Array,
         default: []
+    },
+    headpatRoles: {
+        type: Array,
+        default: [
+            { role: "Aspiring Indulger", limit: 5 },
+            { role: "Gentle Hands", limit: 10 },
+            { role: "Chocobob's BFF", limit: 2500 },
+            { role: "Certified Headpatter", limit: 9000 }
+        ]
     },
     featherRoles: {
         type: Array,

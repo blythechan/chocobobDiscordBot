@@ -32,7 +32,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('fcstats')
 		.setDescription('Retrieve FC statistics')
-            .addStringOption(option => option.setName('fc').setDescription('The Free Company Id to request a stat card for')),
+            .addStringOption(option => option.setName('freecompanyid').setDescription('The Free Company Id to request a stat card for')),
 	async execute(interaction) {
         try {
             await interaction.deferReply();
@@ -40,7 +40,7 @@ module.exports = {
             const guildId =                 interaction.guild.id;
             const guildProfile = 			await Guilds.findByGuild(interaction.guild.id);
             const author =                  interaction.guild.members.cache.get(interaction.member.id);
-            const fc =                      interaction.options.getString('fc') || guildProfile.fcId;
+            const fc =                      interaction.options.getString('freecompanyid') || guildProfile.fcId;
 
             if((!fc || fc.trim() === "") && (!guildProfile.fcId || guildProfile.fcId === "")) {
                 const EMBED = customEmbedBuilder(

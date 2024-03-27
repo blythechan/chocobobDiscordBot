@@ -37,3 +37,5 @@ AdminAction.removeLogsByGuild = async function (guildId) {
     }
     return await this.deleteMany({ guildId: guildId });
 }
+
+module.exports = AdminAction;

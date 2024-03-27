@@ -35,7 +35,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('whoami')
         .setDescription(`Retrieves a character's data from the Lodestone.`)
-        .addStringOption(option => option.setName('character').setDescription('Mention a Lodestone character Id').setRequired(false))
+        .addStringOption(option => option.setName('characterid').setDescription('Mention a Lodestone character Id').setRequired(false))
         .addUserOption(option => option.setName('user').setDescription('Mention the Discord user you want to retrieve (retrieves up to 1 character)').setRequired(false)),
     async execute(interaction) {
         try {
@@ -57,7 +57,7 @@ module.exports = {
                 return;
             }
 
-            const character = interaction.options.getString('character');
+            const character = interaction.options.getString('characterid');
 
             let lodestoneCharacter = undefined;
 

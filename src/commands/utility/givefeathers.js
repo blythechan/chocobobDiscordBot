@@ -170,8 +170,8 @@ module.exports = {
 					// SUCCEESS
 					const mentionedUsersArray = filteredUserIds.map(user => `<@${user}>`);
 					// Begin auto-role
-					await Promise.all(filteredUserIds.map(user => {
-						const userFeathers = Feathers.findFeathersByGuildMember(guildId, user.id);
+					filteredUserIds.map(async (user) => {
+						const userFeathers = await Feathers.findFeathersByGuildMember(guildId, user.id);
 						// ASSIGN ROLE
 						const ASSIGN_ROLE = userFeathers && userFeathers !== null && checkFeathersLimit(regGuild, userFeathers, category);
 						// Retrieve all user data
@@ -180,7 +180,7 @@ module.exports = {
 							try {
 								let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
 								if (!role) {
-									role = interaction.guild.roles.create({
+									role = await interaction.guild.roles.create({
 										name: ASSIGN_ROLE,
 										color: 'Grey', // Change this to your preferred color
 										permissions: [], // Add permissions if needed
@@ -197,9 +197,9 @@ module.exports = {
 									];
 		
 									// Adding the role to the user
-									const member = interaction.guild.members.fetch(user.id);
-									 member.roles.add(role);
-									CommandAudit.createAudit(guildId, sender, "givefeathers", `Assigned ${role.name} [${role.id}] to user ${user.id}`);
+									const member =await interaction.guild.members.fetch(user.id);
+									await member.roles.add(role);
+									await CommandAudit.createAudit(guildId, sender, "givefeathers", `Assigned ${role.name} [${role.id}] to user ${user.id}`);
 									const EMBED = customEmbedBuilder(
 										"Participation is Cool!",
 										defaults.CHOCO_HAPPY_ICON,
@@ -227,7 +227,7 @@ module.exports = {
 								});
 							}
 						}
-					}));
+					});
 					const EMBED = customEmbedBuilder(
 						"Chocobo Feathers Giveaway!",
 						defaults.FEATHER_ICON,

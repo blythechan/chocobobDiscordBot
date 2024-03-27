@@ -39,6 +39,22 @@ Guilds.registerGuild = async function (interaction) {
     return await guildProfile.save();
 }
 
+Guilds.updateHeadpatRoles = async function(docId, allowRoles, overwriteRoles ) {
+    if(allowRoles !== undefined) {
+        return await Guilds.findOneAndUpdate(
+            { _id: docId._id },
+            {$set: { allowHeadpatRoles: allowRoles } },
+            { new: true }
+        );
+    } else if(overwriteRoles && overwriteRoles.length > 0) {
+        return await Guilds.findOneAndUpdate(
+            { _id: docId._id },
+            {$set: { headpatRoles: overwriteRoles } },
+            { new: true }
+        );
+    }
+}
+
 /**
  * Update a guild's registered roles that bot uses for various administrative commands
  * @param {String} docId Obtain the document identifier

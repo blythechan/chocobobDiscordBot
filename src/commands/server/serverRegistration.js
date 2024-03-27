@@ -27,6 +27,12 @@ module.exports = {
 		.addStringOption(option => option.setName("featherrolelimit")
 			.setDescription("To allow `/givefeathers` to determine when to give roles, ex: CATEGORY:NUMBER, Gathering:50.")
 			.setRequired(false))
+		.addBooleanOption(option => option.setName("headpatrolesstatus")
+			.setDescription("When false, this prevents the bot from applying roles for headpats. Enabled by default.")
+			.setRequired(false))
+		.addStringOption(option => option.setName("setheadpatroles")
+			.setDescription("Overwrite headpat roles, ex: Certified Headpatter:50, Midas Pets:99999")
+			.setRequired(false))
 		.addBooleanOption(option => option.setName("status")
 			.setDescription("Get the status of your server.")
 			.setRequired(false))
@@ -56,6 +62,9 @@ module.exports = {
 		// GIVEFEATHERS CONFIG
 		const featherroles =			interaction.options.getString('featherroles');
 		const featherrolelimit =		interaction.options.getString('featherrolelimit');
+		// HEADPATS CONFIG
+		const headpatrolestatus =		interaction.options.getBoolean('headpatrolesstatus');
+		const setheadpatroles =			interaction.options.getString('setheadpatroles');
 		// SERVER DOCUMENT
 		const guildProfile = 			await Guilds.findByGuild(interaction.guild.id);
 
@@ -72,6 +81,30 @@ module.exports = {
 					{ name: `:people_hugging: ${interaction.guild.memberCount} Total Members`, value: " " },
 					{ name: "`/server` Help", value: "* *Register Server*: `/server register`\n* *Remove registration*: `/server deregister`\n* *Register Roles*: `/server roles`\n* *Remove Registered Roles*: `/server clearnomroles`" },
 				]
+			);
+			return interaction.reply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
+		}
+		//#endregion
+
+		//#region headpat configuration
+		if(headpatrolestatus) {
+			await Guilds.updateHeadpatRoles(guildProfile, headpatrolestatus);
+		}
+
+		if(setheadpatroles) {
+			const keyValuePairs = setheadpatroles.split(',');
+			const headpatRoles = keyValuePairs.map(pair => {
+				const [key, value] = pair.split(':');
+				return { role:key.trim(), limit:parseInt(value.trim()) };
+			});
+			await Guilds.updateHeadpatRoles(guildProfile, undefined, headpatRoles);
+			const EMBED = customEmbedBuilder(
+				"Headpat Roles Created",
+				undefined,
+				`I overwrote my existing headpat roles and created ${headpatRoles.length} new roles`
 			);
 			return interaction.reply({
 				embeds: [EMBED],
@@ -113,6 +146,9 @@ module.exports = {
 				? guildProfile.rolesRegistered.map(role => role.name)
 				: "*None Registered*";
 			const listFeatherCats = guildProfile.featherRoles.map(role => `\n**${role.cat}** "${role.role}" assigned if feathers are >= ${role.limit}`)
+			const listHeadpats = guildProfile.allowHeadpatRoles 
+				? guildProfile.headpatRoles.map(role => `\n**${role.role}** assigned if feathers are >= ${role.limit}`)
+				: "Disabled";
 			const EMBED = customEmbedBuilder(
 				"Chocobo Stall Status",
 				defaults.CHOCO_WIKI_ICON,
@@ -121,8 +157,9 @@ module.exports = {
 					{ name: ":green_circle: Registered", value: `${guildProfile.registered}` },
 					{ name: `:notepad_spiral: ${interaction.guild.roles.cache.size} Total Server Roles`, value: " " },
 					{ name: `:people_hugging: ${interaction.guild.memberCount} Total Members`, value: " " },
-					{ name: `:heavy_check_mark: ${guildProfile.rolesRegistered.length} Server Roles Registered`, value: `${listRoles || " "}`},
+					{ name: `:heavy_check_mark: ${guildProfile.rolesRegistered.length} Server Roles for Nominations`, value: `${listRoles || " "}`},
 					{ name: `:heavy_check_mark: ${guildProfile.featherRoles.length} Feather Categories`, value: `${listFeatherCats}`},
+					{ name: `:heavy_check_mark: ${guildProfile.headpatRoles.length} Headpat Roles`, value: `${listHeadpats}`},
 					{ name: "`/server` Help", value: "* *Remove registration*: `/server deregister`\n* *Register Roles*: `/server roles`\n* *Remove Registered Roles*: `/server clearnomroles`\n* *Create server roles per feather category* `/server featherroles`\n* *Role assignment limits for feathers* `/server featherrolelimit`" },
 				]
 			);

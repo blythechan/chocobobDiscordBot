@@ -44,3 +44,5 @@ Character.findByCharacter = async function (characterName, characterId, memberId
 Character.removeCharacter = async function  (characterName, characterId, memberId) {
     return await this.findOne({ $or:{ characterName: characterName, characterId: characterId }, memberId: memberId }).remove().exec();
 }
+
+module.exports = Character;
