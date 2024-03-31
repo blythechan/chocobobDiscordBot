@@ -1,8 +1,8 @@
 {
   "name": "chocobobdiscordbot",
   "version": "1.0.1",
-  "description": "FFXIV bot assistant",
-  "main": "src/bot.js",
+  "description": "Discord bot assistant",
+  "main": "index.js",
   "scripts": {
     "test": "npm run test",
     "start": "node .",
@@ -11,29 +11,24 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tolliverk/chocobobDiscordBot.git"
+    "url": "git+https://github.com/blythechan/chocobobDiscordBot.git"
   },
-  "author": "Blythe Bleethe#6060",
+  "author": "blythechan",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/tolliverk/chocobobDiscordBot/issues"
+    "url": "https://github.com/blythechan/chocobobDiscordBot/issues"
   },
-  "homepage": "https://github.com/tolliverk/chocobobDiscordBot#readme",
+  "homepage": "https://github.com/blythechan/chocobobDiscordBot#readme",
   "dependencies": {
-    "@discordjs/rest": "^1.7.1",
-    "@napi-rs/canvas": "^0.1.40",
-    "@xivapi/js": "^0.4.1",
-    "chalk": "^5.2.0",
-    "crypto-js": "^4.1.1",
-    "discord-api-types": "^0.37.42",
-    "discord.js": "^14.9.0",
-    "discordjs-button-pagination": "^3.0.1",
-    "discordjs-paginate": "^0.0.7-bunnygirl",
-    "discordjs-v14-pagination": "^1.0.6",
-    "dotenv": "^16.0.3",
-    "mongoose": "^7.1.1",
-    "puppeteer": "^19.11.1",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "@discordjs/rest": "^2.2.0",
+    "@napi-rs/canvas": "^0.1.51",
+    "@xivapi/js": "^0.4.5",
+    "chalk": "^5.3.0",
+    "crypto-js": "^4.2.0",
+    "discord-api-types": "^0.37.77",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.2.4",
+    "puppeteer": "^22.6.1"
   }
 }

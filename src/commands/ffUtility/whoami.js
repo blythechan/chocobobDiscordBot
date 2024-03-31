@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder } = require('discord.js');
-const scrapeLodestoneByCharacterId = require('../../functions/tools/lodestoneScrape');
+const scrapeLodestoneByCharacterId = require('../../functions/tools/lodestoneScrapeByCharacterId');
 const Character = require('../../schemas/character');
 const CommandAudit = require('../../statics/commandAuditUtility');
 const defaults = require('../../functions/tools/defaults.json');
@@ -44,7 +44,7 @@ module.exports = {
 
             const guildId = interaction.guild.id;
             const author = interaction.guild.members.cache.get(interaction.member.id);
-			const user = interaction.options.getUser("user");
+			const user = interaction.options.getUser("user") || interaction.guild.members.cache.get(interaction.member.id);
             // Verify command is past cooldown
             const verifyCooldown = await CommandAudit.checkCooldown(guildId, author, "whoami", "5 minutes");
             if(!verifyCooldown) {

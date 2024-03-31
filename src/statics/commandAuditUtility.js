@@ -32,7 +32,7 @@ CommandAudit.createAudit = async function(guildId, memberId, command, details) {
         return false;
     }
     if(keepAuditAlive.includes(keepAuditAlive)) {
-        const isWithinCooldown = checkCooldown(guildID, memberId, command);
+        const isWithinCooldown = checkCooldown(guildId, memberId, command);
         if(isWithinCooldown === false) {
             this.deleteOne({ command: command, guildId: guildId, memberId: memberId });
         } else {
@@ -95,9 +95,9 @@ function passed12HourCooldown(dateTime) {
 function passed5MinuteCooldown(dateTime) {
     const inputDate = new Date(dateTime);
     const currentDate = new Date();
-    const twelveHoursAgo = new Date(currentDate);
-    twelveHoursAgo.setHours(currentDate.getMinutes() - 5);  
-    return inputDate < twelveHoursAgo;
+    const fiveMinutesAgo = new Date(currentDate);
+    fiveMinutesAgo.setMinutes(currentDate.getMinutes() - 5);
+    return inputDate < fiveMinutesAgo;
 }
 
 module.exports = CommandAudit;

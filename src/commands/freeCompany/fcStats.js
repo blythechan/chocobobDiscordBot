@@ -3,7 +3,7 @@ const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
 const CommandAudit = require('../../statics/commandAuditUtility');
 const Guilds = require ('../../statics/guildUtility');
 const defaults = require('../../functions/tools/defaults.json');
-const scrapeLodestoneByFreeCompanyId = require('../../functions/tools/lodestoneScrape');
+const scrapeLodestoneByFreeCompanyId = require('../../functions/tools/lodestoneScrapeByFreeCompanyId');
 const Canvas = require('@napi-rs/canvas');
 
 const applyText = (canvas, text) => {

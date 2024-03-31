@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const mongoose = require('mongoose');
 const CryptoJS = require('crypto-js');
 const Character = require('../../schemas/character');
-const scrapeLodestoneBioBycharacterId = require('../../functions/tools/lodestoneScrape');
+const scrapeLodestoneBioBycharacterId = require('../../functions/tools/lodestoneScrapeBioByCharacterId');
 const { ENCRPTY } = process.env;
 
 module.exports = {
