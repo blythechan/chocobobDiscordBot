@@ -1,8 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
 const mongoose = require('mongoose');
 const CryptoJS = require('crypto-js');
+const axios = require('axios');
+const cheerio = require("cheerio");
 const Character = require('../../schemas/character');
-const scrapeLodestoneBioBycharacterId = require('../../functions/tools/lodestoneScrapeBioByCharacterId');
 const { ENCRPTY } = process.env;
 
 module.exports = {
@@ -18,17 +19,47 @@ module.exports = {
 			const lodestoneCharacter = await Character.findOne({ guildId: interaction.guild._id, memberId: author.user.id });
 
 			// Retrieve character
-			const pieces = await scrapeLodestoneBioBycharacterId(character);
-			if(!pieces || !pieces.bio) {
+			
+            /** CHEERIO VARS */
+			const cheerioResults = {
+				bio: [],
+				world: [],
+				name: []
+			}
+            /** CHEERIO VARS */
+			
+			await axios//#character > div.character__content.selected > div.character__selfintroduction
+				.get(`https://na.finalfantasyxiv.com/lodestone/character/${character}/`)
+				.then(function (response) {
+					const $ = cheerio.load(response.data);
+					$('#character > div.character__content.selected > div.character__selfintroduction').each((idx, element) => {
+						const bio = $(element).text();
+						cheerioResults.bio.push(bio);
+					});
+
+					$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__name').each((idx, element) => {
+						const fullName = $(element).text();
+						cheerioResults.name.push(fullName);
+					});
+
+					$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__world').each((idx, element) => {
+						const world = $(element).text();
+						cheerioResults.world.push(world);
+					});
+				})
+				.catch(error => {
+					console.error(`Error encountered during verify:`, error);
+				});
+			if(cheerioResults.bio.length  === 0) {
 				return await interaction.reply({
 					content: `I couldn't send you a DM about how to get your character verified... well, the Kupo are rather buys these days.`,
 					ephemeral: true
 				});
 			}
 
-			const characterStatus = pieces.bio[0];
-			const characterWorld = pieces.world[0];
-			const characterName = pieces.name[0];
+			const characterStatus = cheerioResults.bio[0];
+			const characterWorld = cheerioResults.world[0];
+			const characterName = cheerioResults.name[0];
 			let tokenMatch = false;
 			let newCharacter = false;
 			// Token matches?
