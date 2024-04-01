@@ -27,7 +27,7 @@ module.exports = {
 				name: []
 			}
             /** CHEERIO VARS */
-			
+
 			await axios//#character > div.character__content.selected > div.character__selfintroduction
 				.get(`https://na.finalfantasyxiv.com/lodestone/character/${character}/`)
 				.then(function (response) {
@@ -67,7 +67,7 @@ module.exports = {
 				tokenMatch = true;
 			}
 			// Another character?
-			if(lodestoneCharacter && (lodestoneCharacter.characterName !== pieces.name) && (lodestoneCharacter.characterId !== character)) {
+			if(lodestoneCharacter && (lodestoneCharacter.characterName !== cheerioResults.name[0]) && (lodestoneCharacter.characterId !== character)) {
 				newCharacter = true;
 			}
 
