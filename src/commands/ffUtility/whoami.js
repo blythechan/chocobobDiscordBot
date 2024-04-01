@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, AttachmentBuilder, EmbedBuilder } = require('discord.js');
-const scrapeLodestoneByCharacterId = require('../../functions/tools/lodestoneScrapeByCharacterId');
+const axios = require('axios');
+const cheerio = require("cheerio");
 const Character = require('../../schemas/character');
 const CommandAudit = require('../../statics/commandAuditUtility');
 const defaults = require('../../functions/tools/defaults.json');
@@ -89,14 +90,91 @@ module.exports = {
 
             let collectionsMissing = "";
 
-            if (lodestoneCharacter) {
-                finalRes = await scrapeLodestoneByCharacterId(lodestoneCharacter.characterId);
-                finalCollect = await fetch(`https://ffxivcollect.com/api/characters/${lodestoneCharacter.characterId}`, requestOptions_limit)
-                    .then(response => response.json());
-            // By Id without lodestone lookup
-            } else if(/^\d+$/.test(character)) {
-                finalRes = await scrapeLodestoneByCharacterId(character);
-                finalCollect = await fetch(`https://ffxivcollect.com/api/characters/${character}`, requestOptions_limit)
+            /** CHEERIO VARS */
+            const cheerioResults = {
+                name: [],
+                playerTitle: [],
+                world: [],
+                race: [],
+                fc: [],
+                portrait: [],
+                activeClass: [],
+                activeClassIcon: [],
+                jobClasses: [],
+                attributes: [],
+            }
+            /** CHEERIO VARS */
+
+            const CHARACTER_ID = lodestoneCharacter 
+                ? lodestoneCharacter.characterId
+                : /^\d+$/.test(character)
+                    ? character
+                    : false;
+            if(CHARACTER_ID) {
+                await axios
+                    .get(`https://na.finalfantasyxiv.com/lodestone/character/${CHARACTER_ID}/`)
+                    .then(function (response) {
+                        const $ = cheerio.load(response.data);
+                        $('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__name').each((idx, element) => {
+                            const fullName = $(element).text();
+                            cheerioResults.name.push(fullName);
+                        });
+
+                        $('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__title').each((idx, element) => {
+                            const title = $(element).text();
+                            cheerioResults.playerTitle.push(title);
+                        });
+
+                        $('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__world').each((idx, element) => {
+                            const world = $(element).text();
+                            cheerioResults.world.push(world);
+                        });
+
+                        $('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(1) > div > p.character-block__name').each((idx, element) => {
+                            const race = $(element).text();
+                            cheerioResults.race.push(race);
+                        });
+                        
+                        $('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(5) > div.character-block__box > div > h4 > a').each((idx, element) => {
+                            const fc = $(element).text();
+                            cheerioResults.fc.push(fc);
+                        });
+
+                        $('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__detail > div.character__view.clearfix > div.character__detail > div.character__detail__image > a > img:nth-child(1)').each((idx, element) => {
+                            const src = $(element).attr('src');
+                            cheerioResults.portrait.push(src);
+                        });
+                        
+                        $('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__detail > div.character__view.clearfix > div.character__class > div.character__class__data > p').each((idx, element) => {
+                            const activeClass = $(element).text();
+                            cheerioResults.activeClass.push(activeClass);
+                        });
+                        
+                        $('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__detail > div.character__view.clearfix > div.character__class > div.character__class__data > div > img').each((idx, element) => {
+                            const src = $(element).attr('src');
+                            cheerioResults.activeClassIcon.push(src);
+                        });
+                        
+                        $('div.character__level__list ul li').each((index, element) => {
+                            const level = $(element).text();
+                            const jobClassIcon = $(element).find('img').attr('src');
+                            
+                            cheerioResults.jobClasses.push({ level, jobClassIcon });
+                        });
+
+                        $('table.character__param__list tbody tr').each((index, element) => {
+                            // Get the text from the <th> and <td> elements
+                            const key = $(element).find('th').text().replace("Potency", "").trim();
+                            const value = $(element).find('td').text().trim();
+                            
+                            // Push key-value pair to the result array
+                            cheerioResults.attributes.push({ key, value });
+                        });
+                    })
+                    .catch(error => {
+                        console.error(`Error encountered during verify:`, error);
+                    });
+                finalCollect = await fetch(`https://ffxivcollect.com/api/characters/${CHARACTER_ID}`, requestOptions_limit)
                     .then(response => response.json());
             } else {
                 const CARD_EMBED_ERROR3 = new EmbedBuilder()
@@ -135,7 +213,7 @@ module.exports = {
             context.fill();
 
             // Character Portrait
-            const portrait = await Canvas.loadImage(finalRes.portrait[0]);
+            const portrait = await Canvas.loadImage(cheerioResults.portrait[0]);
             context.drawImage(portrait, 0, 0, 640, 873);
 
             if(useFFXIVCollect) {
@@ -164,7 +242,7 @@ module.exports = {
                 context.fillStyle = 'WHITE';
                 context.fillText(charAC, 50, 640);
 
-                const charJobs = `Class Jobs: ${finalRes.classes.length || "ERROR"} / 31`;
+                const charJobs = `Class Jobs: ${Object.keys(cheerioResults.jobClasses).length || "ERROR"} / 31`;
                 context.font = applySubText(canvas, charJobs);
                 context.fillStyle = 'WHITE';
                 context.fillText(charJobs, 50, 680);
@@ -179,41 +257,41 @@ module.exports = {
                 context.fillStyle = 'WHITE';
                 context.fillText(charMO, 50, 760);
             } else {
-                collectionsMissing = `\n Error: Collections cannot be retrieved because ${finalRes.name} has not registered with FFXIV Collect.`;
+                collectionsMissing = `\n Error: Collections cannot be retrieved because ${cheerioResults.name} has not registered with FFXIV Collect.`;
             }
 
             // NAME
-            const title = finalRes.title;
-            const charName = `${finalRes.name} <${title}>`;
+            const title = cheerioResults.playerTitle;
+            const charName = `${cheerioResults.name} <${title}>`;
             context.font = applySubText(canvas, charName);
             context.fillStyle = 'WHITE';
             context.fillText(charName, 700, 60);
 
             // ACTIVE CLASS/JOB ICON (draws it over portrait)
-            const classJobIcon = await Canvas.loadImage(finalRes.activeClass[0]);
+            const classJobIcon = await Canvas.loadImage(cheerioResults.activeClassIcon[0]);
             context.drawImage(classJobIcon, 0, 0, 55, 55);
 
             // RACE
-            const charRace = `Species: ${finalRes.profile[0]} `;
+            const charRace = `Species: ${cheerioResults.race[0]} `;
             context.font = applySubText(canvas, charRace);
             context.fillStyle = 'WHITE';
             context.fillText(charRace, 700, 100);
 
             // SERVER
-            const charServer = `World: ${finalRes.world}`;
+            const charServer = `World: ${cheerioResults.world}`;
             context.font = applySubText(canvas, charServer);
             context.fillStyle = 'WHITE';
             context.fillText(charServer, 700, 140);
 
             // FC
-            const charFC = `Free Company: ${finalRes.profile[2]}`;
+            const charFC = `Free Company: ${cheerioResults.fc[0]}`;
             context.font = applySubText(canvas, charFC);
             context.fillStyle = 'WHITE';
             context.fillText(charFC, 700, 180);
 
             // statusAttributes, attributes
             // ATTRIBUTES
-            if(finalRes.attributes) {
+            if(cheerioResults.attributes) {
                 context.font = applyText(canvas, "Attributes");
                 context.fillStyle = 'WHITE';
                 context.fillText("Attributes", 1290, 280);
@@ -221,9 +299,9 @@ module.exports = {
                 let attrX = 1300;
                 let attrY = 280;
                 let attribute = 1;
-                (finalRes.attributes || []).map(obj => {
-                    const key = Object.keys(obj)[0];
-                    const value = obj[key];
+                (cheerioResults.attributes || []).map(obj => {
+                    const key = obj.key//Object.keys(obj)[0];
+                    const value = obj.value;
                     attrX = attrX + 400;
                     if (attribute % 2 === 1) {
                         attrY = attrY + 50;
@@ -232,7 +310,7 @@ module.exports = {
 
                     const attNum = value;
                     const name = key;
-                    const charAtt = `${name.replace("Potency", "").trim()}: ${attNum}`;
+                    const charAtt = `${name}: ${attNum}`;
                     context.font = applySubText(canvas, charAtt);
                     context.fillStyle = 'WHITE';
                     context.fillText(charAtt, attrX, attrY);
@@ -246,7 +324,7 @@ module.exports = {
             context.fillStyle = 'WHITE';
             context.fillText("Classes", 750, 270);
 
-            const charClasses = finalRes.classes;
+            const charClasses = cheerioResults.jobClasses;
             let y = 200;
             let x = 700;
             let placeholder = 1;
@@ -261,7 +339,7 @@ module.exports = {
                         x = 700;
                     }
 
-                    const imageURL = classJob.url;
+                    const imageURL = classJob.jobClassIcon;
                     const classJobIcon = await Canvas.loadImage(imageURL);
                     context.drawImage(classJobIcon, x + 50, y, 55, 55);
 
