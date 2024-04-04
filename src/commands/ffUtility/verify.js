@@ -80,8 +80,9 @@ module.exports = {
 						});
 
 						$('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(5) > div.character-block__box > div > h4 > a').each((idx, element) => {
-							const fc = $(element).text();
-							cheerioResults.fc.push(fc);
+							const href = $('a').attr('href');
+							const urlParameter = href.split('/').pop();
+							cheerioResults.fc.push(urlParameter);
 						});
 					})
 					.catch(error => {
@@ -94,38 +95,52 @@ module.exports = {
 				// 	});
 				// }
 			} else if (characterName && homeWorld) {
+				let href = "";
 				await axios//#character > div.character__content.selected > div.character__selfintroduction
-					.get(`https://na.finalfantasyxiv.com/lodestone/character/${character}/`)
+					.get(`https://na.finalfantasyxiv.com/lodestone/character/?q=${characterName.replace(" ", "+")}&worldname=${homeWorld}&classjob=&race_tribe=&blog_lang=ja&blog_lang=en&blog_lang=de&blog_lang=fr&order=`)
 					.then(function (response) {
 						const $ = cheerio.load(response.data);
-						$('#character > div.character__content.selected > div.character__selfintroduction').each((idx, element) => {
-							const bio = $(element).text();
-							cheerioResults.bio.push(bio);
-						});
-
-						$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__name').each((idx, element) => {
-							const fullName = $(element).text();
-							cheerioResults.name.push(fullName);
-						});
-
-						$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__world').each((idx, element) => {
-							const world = $(element).text();
-							cheerioResults.world.push(world);
-						});
-
 						$('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(5) > div.character-block__box > div > h4 > a').each((idx, element) => {
-							const fc = $(element).text();
-							cheerioResults.fc.push(fc);
+							href = $('a').attr('href');
 						});
 					})
 					.catch(error => {
 						console.error(`Error encountered during verify:`, error);
 					});
-			}
+				await axios//#character > div.character__content.selected > div.character__selfintroduction
+				.get(href)
+				.then(function (response) {
+					const $ = cheerio.load(response.data);
+					$('#character > div.character__content.selected > div.character__selfintroduction').each((idx, element) => {
+						const bio = $(element).text();
+						cheerioResults.bio.push(bio);
+					});
+
+					$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__name').each((idx, element) => {
+						const fullName = $(element).text();
+						cheerioResults.name.push(fullName);
+					});
+
+					$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__world').each((idx, element) => {
+						const world = $(element).text();
+						cheerioResults.world.push(world);
+					});
+
+					$('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(5) > div.character-block__box > div > h4 > a').each((idx, element) => {
+						const href = $('a').attr('href');
+						const urlParameter = href.split('/').pop();
+						cheerioResults.fc.push(urlParameter);
+					});
+				})
+				.catch(error => {
+					console.error(`Error encountered during verify:`, error);
+				});
+		}
 
 			const characterStatus = cheerioResults.bio[0];
-			const characterWorld = cheerioResults.world[0];
+			const characterAddress = cheerioResults.world[0];
 			const characterName = cheerioResults.name[0];
+			const freeCompanyId = cheerioResults.fc[0];
 			let tokenMatch = false;
 			let newCharacter = false;
 			// Token matches?
@@ -141,7 +156,7 @@ module.exports = {
 				lodestoneCharacter.verified = true;
 				lodestoneCharacter.updatedAt = Date().toString();
 				await Character.updateOne(lodestoneCharacter).catch(console.error);
-				return interaction.reply(`Your character, ${characterName}, from ${characterWorld} has already been verified with Chocobob as of ${lodestoneCharacter.createdAt}!`);
+				return interaction.reply(`Your character, ${characterName}, from ${characterAddress} has already been verified with Chocobob as of ${lodestoneCharacter.createdAt}!`);
 			} else if (!lodestoneCharacter || !tokenMatch || newCharacter) {
 				const randomPlainText = generatePlaintText(5);
 				const encryptedText = lodestoneCharacter && lodestoneCharacter.lodestoneToken ? lodestoneCharacter.lodestoneToken : `choco-${encryptString(`${randomPlainText}${author.user.id}`, ENCRPTY)}`;
@@ -151,6 +166,7 @@ module.exports = {
 						guildId: interaction.guild._id,
 						characterName: characterName,
 						characterId: character,
+						freeCompanyId: freeCompanyId,
 						lodestoneToken: encryptedText,
 						memberId: interaction.member.id,
 						createdAt: Date().toString(),
