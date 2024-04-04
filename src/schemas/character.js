@@ -7,6 +7,7 @@ const characterSchema = new Schema({
     characterId:        String,
     characterServer:    Object,
     lodestoneToken:     String,
+    freeCompanyId:      String,
     memberId:           String,
     verified:           Boolean,
     createdAt:          String,
