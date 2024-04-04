@@ -37,7 +37,7 @@ module.exports = {
         .setName('whoami')
         .setDescription(`Retrieves a character's data from the Lodestone.`)
         .addStringOption(option => option.setName('characterid').setDescription('Mention a Lodestone character Id').setRequired(false))
-        .addUserOption(option => option.setName('user').setDescription('Mention the Discord user you want to retrieve (retrieves up to 1 character)').setRequired(false)),
+        .addUserOption(option => option.setName('user').setDescription('Mention the Discord user you want to retrieve').setRequired(false)),
     async execute(interaction) {
         try {
 
@@ -67,11 +67,12 @@ module.exports = {
                     ? await Character.findOne({ guildId: interaction.guild._id, memberId: author, characterId: character })
                     : await Character.findOne({ guildId: interaction.guild._id, memberId: author, characterName: character });
             } else if(user) {
-                lodestoneCharacter = await Character.findOne({ guildId: interaction.guild._id, memberId: user.id });
+                lodestoneCharacter = await Character.find({ guildId: interaction.guild._id, memberId: user.id });
+                console.log("Character retrieval:", lodestoneCharacter);
             } else {
                 const CARD_EMBED_ERROR2 = new EmbedBuilder()
                     .setColor(defaults.COLOR)
-                    .setDescription(`Kweh! I could not retrieve ${character || user.username} because it is either not registered with me or the information you provided is incorrect. Try searching them up by their character Id.`)
+                    .setDescription(`Kweh! I could not retrieve that character because it is either not registered with me or the information you provided is incorrect. Try searching them up by their character Id.`)
                     .addFields(
                         { name: 'To Register', value: "`/verify server user` and follow the instructions in the DM that I send you." },
                     )
@@ -81,7 +82,6 @@ module.exports = {
             }
 
             let useFFXIVCollect = true;         // Determines if FFXIVCollect API scanned character's data, is set if finalCollect returns 404
-            let finalRes        = undefined;    // Stored data from FFXIVAPI
             let finalCollect    = undefined;    // Stored data from FFXIVCollect API
 
             let characterAC     = undefined;    // Stores Achievements, if public

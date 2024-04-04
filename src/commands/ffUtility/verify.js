@@ -1,60 +1,126 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const mongoose = require('mongoose');
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
 const cheerio = require("cheerio");
 const Character = require('../../schemas/character');
+const FFXIVServers = require('../../schemas/ffxivServers');
+const defaults = require('../../functions/tools/defaults.json');
 const { ENCRPTY } = process.env;
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('verify')
-		.addStringOption(option => option.setName('characterid').setDescription('What is your player Id in Lodestone?').setRequired(true))
-		.setDescription('Register with the FFXIV Lodestone.'),
+		.addStringOption(option => option.setName('characterid').setDescription('What is your player Id in Lodestone?'))
+		.addStringOption(option => option.setName('charactername').setDescription('What is the full name of your character?'))
+		.addStringOption(option => option.setName('datacenter').setDescription('What is the data center?').setAutocomplete(true))
+		.addStringOption(option => option.setName('homeworld').setDescription('What is the homeworld?').setAutocomplete(true))
+		.setDescription('Register with the FFXIV Lodestone via id OR name, data center, and home world.'),
+	async autocomplete(interaction, client) {
+		const focusedOption = interaction.options.getFocused(true);
+		let choices = [];
+		if(focusedOption.name === "datacenter") {
+			const homeworldOption = interaction.options.getString('homeworld');
+			if(!homeworldOption) choices = await FFXIVServers.distinct("data_center");
+			else choices = await FFXIVServers.findOne({ home_worlds: { $in: [homeworldOption] } }, { data_center: 1});
+		} 
+
+		if(focusedOption.name === "homeworld") {
+			const datacenterOption = interaction.options.getString('datacenter');
+			if(!datacenterOption) choices = await FFXIVServers.distinct("home_worlds");
+			else choices = await FFXIVServers.findOne({ data_center: datacenterOption }, { home_worlds: 1});
+		}
+
+		const filtered = choices.filter((choice) => choice.startsWith(focusedValue));
+		await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
+	},
 	async execute(interaction) {
 		try {
 			//find the character with their name and server
-			const character = interaction.options.getString('characterid');
-			const author = interaction.guild.members.cache.get(interaction.member.id);
-			const lodestoneCharacter = await Character.findOne({ guildId: interaction.guild._id, memberId: author.user.id });
+			const character 			= interaction.options.getString('characterid');
+			const characterFullName		= interaction.options.getString('charactername');
+			const homeWorld 			= interaction.options.getString('homeworld');
+			if(!character || !(characterFullName && homeWorld)) {
+				const CARD_EMBED = new EmbedBuilder()
+					.setColor(defaults.COLOR)
+					.setDescription(`Kweh! You haven't given me enough information to go find that character. Character Id or character name and home world are required.`);
+				return await interaction.editReply({ embeds: [CARD_EMBED] });
+			}
+			const author 				= interaction.guild.members.cache.get(interaction.member.id);
+			const lodestoneCharacter 	= await Character.findOne({ guildId: interaction.guild._id, memberId: author.user.id });
 
 			// Retrieve character
-			
             /** CHEERIO VARS */
 			const cheerioResults = {
 				bio: [],
 				world: [],
-				name: []
+				name: [],
+				fc: []
 			}
             /** CHEERIO VARS */
 
-			await axios//#character > div.character__content.selected > div.character__selfintroduction
-				.get(`https://na.finalfantasyxiv.com/lodestone/character/${character}/`)
-				.then(function (response) {
-					const $ = cheerio.load(response.data);
-					$('#character > div.character__content.selected > div.character__selfintroduction').each((idx, element) => {
-						const bio = $(element).text();
-						cheerioResults.bio.push(bio);
-					});
+			if(character) {
+				await axios//#character > div.character__content.selected > div.character__selfintroduction
+					.get(`https://na.finalfantasyxiv.com/lodestone/character/${character}/`)
+					.then(function (response) {
+						const $ = cheerio.load(response.data);
+						$('#character > div.character__content.selected > div.character__selfintroduction').each((idx, element) => {
+							const bio = $(element).text();
+							cheerioResults.bio.push(bio);
+						});
 
-					$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__name').each((idx, element) => {
-						const fullName = $(element).text();
-						cheerioResults.name.push(fullName);
-					});
+						$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__name').each((idx, element) => {
+							const fullName = $(element).text();
+							cheerioResults.name.push(fullName);
+						});
 
-					$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__world').each((idx, element) => {
-						const world = $(element).text();
-						cheerioResults.world.push(world);
+						$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__world').each((idx, element) => {
+							const world = $(element).text();
+							cheerioResults.world.push(world);
+						});
+
+						$('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(5) > div.character-block__box > div > h4 > a').each((idx, element) => {
+							const fc = $(element).text();
+							cheerioResults.fc.push(fc);
+						});
+					})
+					.catch(error => {
+						console.error(`Error encountered during verify:`, error);
 					});
-				})
-				.catch(error => {
-					console.error(`Error encountered during verify:`, error);
-				});
-			if(cheerioResults.bio.length  === 0) {
-				return await interaction.reply({
-					content: `I couldn't send you a DM about how to get your character verified... well, the Kupo are rather buys these days.`,
-					ephemeral: true
-				});
+				// if(cheerioResults.bio.length  === 0) {
+				// 	return await interaction.reply({
+				// 		content: `It seems your Lodestone profile is empty, kweh. I couldn't verify your character.`,
+				// 		ephemeral: true
+				// 	});
+				// }
+			} else if (characterName && homeWorld) {
+				await axios//#character > div.character__content.selected > div.character__selfintroduction
+					.get(`https://na.finalfantasyxiv.com/lodestone/character/${character}/`)
+					.then(function (response) {
+						const $ = cheerio.load(response.data);
+						$('#character > div.character__content.selected > div.character__selfintroduction').each((idx, element) => {
+							const bio = $(element).text();
+							cheerioResults.bio.push(bio);
+						});
+
+						$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__name').each((idx, element) => {
+							const fullName = $(element).text();
+							cheerioResults.name.push(fullName);
+						});
+
+						$('#character > div.frame__chara.js__toggle_wrapper > a > div.frame__chara__box > p.frame__chara__world').each((idx, element) => {
+							const world = $(element).text();
+							cheerioResults.world.push(world);
+						});
+
+						$('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(5) > div.character-block__box > div > h4 > a').each((idx, element) => {
+							const fc = $(element).text();
+							cheerioResults.fc.push(fc);
+						});
+					})
+					.catch(error => {
+						console.error(`Error encountered during verify:`, error);
+					});
 			}
 
 			const characterStatus = cheerioResults.bio[0];

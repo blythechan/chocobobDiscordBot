@@ -9,6 +9,20 @@ const guildSchema = new Schema({
         type: Boolean,
         default: true
     },
+    allowFCAutoRoleOnRegister: {
+        type: Boolean,
+        default: true
+    },
+    allowRemoveFCRoleOnRegister: {
+        tyle: Boolean,
+        default: false
+    },
+    autoFCRoleOnRegister: {
+        type: Array,
+        default: [
+            { role: "Namer", role_id: "1215941500131741776" }
+        ]
+    },
     registered: String,
     rolesRegistered: {
         type: Array,
