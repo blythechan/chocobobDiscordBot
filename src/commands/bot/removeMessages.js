@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, PermissionsBitField } = require('discord.js');
 const Guilds = require('../../schemas/guilds');
 const AdministrativeAction = require('../../schemas/administrativeAction');
-const mongoose = require('mongoose');
 
 module.exports = {
     data: new SlashCommandBuilder()

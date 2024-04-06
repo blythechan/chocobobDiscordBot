@@ -19,7 +19,7 @@ module.exports = {
             
             const guildId                   = interaction.guild.id;
             const author                    = interaction.guild.members.cache.get(interaction.member.id);
-            CommandAudit.createAudit(guildId, author, "poll");
+            await CommandAudit.createAudit(guildId, author, "poll");
 
             const message = await interaction.reply({
                   content: body,

@@ -7,11 +7,11 @@ module.exports = {
         .setName('permission')
         .setDescription('Modify a user role.')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-        .addUserOption(option => option.setName('user').setDescription('Which user do you want to involve?').setRequired(true))
-        .addStringOption(option => option.setName('action').setDescription('Remove/Add a role, Ban, or Kick').setAutocomplete(true).setRequired(false))
-        .addRoleOption(option => option.setName('role').setDescription('Role to Remove/Add').setRequired(false))
-        .addStringOption(option => option.setName('reason').setDescription('Reason for permission change?').setRequired(false))
-        .addBooleanOption(option => option.setName('notify').setDescription('Notify user of reason?').setRequired(false)),
+        .addUserOption(option           => option.setName('user').setDescription('Which user do you want to involve?').setRequired(true))
+        .addStringOption(option         => option.setName('action').setDescription('Remove/Add a role, Ban, or Kick').setAutocomplete(true).setRequired(false))
+        .addRoleOption(option           => option.setName('role').setDescription('Role to Remove/Add').setRequired(false))
+        .addStringOption(option         => option.setName('reason').setDescription('Reason for permission change?').setRequired(false))
+        .addBooleanOption(option        => option.setName('notify').setDescription('Notify user of reason?').setRequired(false)),
     async autocomplete(interaction, client) {
         const focusedValue = interaction.options.getFocused();
         const choices = ["Add", "Remove", "Ban", "Kick"];
@@ -89,16 +89,10 @@ module.exports = {
         if (regGuilds) {
             const author = interaction.guild.members.cache.get(interaction.member.id);
             let logAction = await new AdministrativeAction({
-                _id: new mongoose.Types.ObjectId(),
                 guildId: interaction.guild._id,
-                member: {
-                    id: author.user.id,
-                    username: author.user.username,
-                    discriminator: author.user.discriminator
-                },
+                memberId: author.user.id,
                 command: `/permissions ${user.username}#${user.discriminator} ${action} ${role.name} ${reason} ${notifyUser} ${ephemeral}`,
                 outcome: `${forAdmin}\n\n**Reason**: ${reason}\n\n${notifyThem}`,
-                actionTakenOn: Date().toString(),
             });
             await logAction.save().catch(console.error);
             loggedIt = logAction ? true : false;

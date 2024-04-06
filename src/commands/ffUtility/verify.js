@@ -13,13 +13,13 @@ const { ENCRPTY } = process.env;
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('verify')
-		.addBooleanOption(option => option.setName('help').setDescription('Get help about `/verify` command'))
-		.addBooleanOption(option => option.setName('mycharacters').setDescription('List your verified characters'))
-		.addStringOption(option => option.setName('removecharacterid').setDescription('Unverify a character id'))
-		.addStringOption(option => option.setName('characterid').setDescription('What is your player Id in Lodestone?'))
-		.addStringOption(option => option.setName('charactername').setDescription('What is the full name of your character?'))
-		.addStringOption(option => option.setName('datacenter').setDescription('What is the data center?').setAutocomplete(true))
-		.addStringOption(option => option.setName('homeworld').setDescription('What is the homeworld?').setAutocomplete(true))
+		.addBooleanOption(option 	=> option.setName('help').setDescription('Get help about `/verify` command'))
+		.addBooleanOption(option 	=> option.setName('mycharacters').setDescription('List your verified characters'))
+		.addStringOption(option 	=> option.setName('removecharacterid').setDescription('Unverify a character id'))
+		.addStringOption(option 	=> option.setName('characterid').setDescription('What is your player Id in Lodestone?'))
+		.addStringOption(option 	=> option.setName('charactername').setDescription('What is the full name of your character?'))
+		.addStringOption(option 	=> option.setName('datacenter').setDescription('What is the data center?').setAutocomplete(true))
+		.addStringOption(option 	=> option.setName('homeworld').setDescription('What is the homeworld?').setAutocomplete(true))
 		.setDescription('Register with the FFXIV Lodestone via id OR name, data center, and home world.'),
 	async autocomplete(interaction, client) {
 		const focusedOption = interaction.options.getFocused(true);
@@ -271,7 +271,7 @@ module.exports = {
 			if (lodestoneCharacter !== null && tokenMatch && !newCharacter) {
 				lodestoneCharacter.verified = true;
 				lodestoneCharacter.updatedAt = Date().toString();
-				await Character.updateCharacter(author.user.id, lodestoneCharacter);
+				await Character.updateCharacter(author.user.id, lodestoneCharacter.characterId, lodestoneCharacter);
 				// #region Auto Role
 				if (autoAssignRole && guildProfile.fcIds.includes(freeCompanyId) && guildProfile.autoFCRoleOnRegister[0]) {
 					const ASSIGN_ROLE = guildProfile.autoFCRoleOnRegister[0];
@@ -340,7 +340,7 @@ module.exports = {
 					lodestoneCharacter.characterName = characterName;
 					lodestoneCharacter.characterId = character;
 					lodestoneCharacter.updatedAt = Date().toString();
-					await Character.updateCharacter(author.user.id, lodestoneCharacter);
+					await Character.updateCharacter(author.user.id, lodestoneCharacter.characterId, lodestoneCharacter);
 				}
 				
 				interaction.user.send({
