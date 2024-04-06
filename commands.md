@@ -12,6 +12,7 @@
  
 - Polls
   - `/poll description emoteA emoteB emoteC emoteD`
+  - Actions are logged
   - Description: Requires the user to be a server administrator. Creates a message with preset reactions.
  
 - Purge Messages
@@ -21,20 +22,40 @@
   - Description: Removes up to 100 messages within the last 14 days on the current text-channel. User can be selected by the command itself. It is possible to select Chocobob. Success message will disappear after 10 seconds.
 
 ### Server
+- All commands are restricted to server administrators only. All actions are logged.
 - Server Status
   - `/server`
   - Description: Required to allow the bot to use all of its commands and log commands.
     
 - Server Registration/De-Registration
    - `/server register`
-  - Restricted to server administrators only.
   - Description: Allow Chocobob to log administrative actions, support FFXIV players with their Lodestone, and much more, by registering with Chocobob. "De-registering" with Chocobob will involve the removal of most if not all data related to your server.\n\nIt is **not** required to register with Chocobob, but some commands may not be available.'
 
 - Set Free Company Id
-  - `/server freecompanyid`
-  - Restricted to server administrators only.
+  - `/server addfc` or `/fc addfc`
+  - Supports multiple Free Companies, but they must be added one at a time.
   - Description: Registers a FFXIV Free Company with a server to prevent having to repeat FC id for commands.
-    
+
+- Remove Free Company Id
+  - `/fc removefc`
+  - Description: Remove a registered free company id from the server.
+ 
+- List of Free Companies Registered
+  - `/fc registry`
+  - Description: See list of free company ids registered to this server.
+ 
+- List of Free Companies Roles
+  - `/fc roles`
+  - Description: See list of free company id related roles to this server.
+ 
+- Set Auto Roles for Free Companies
+  - `/fc setautoroles`
+  - Requires that `/fc setautoroles` is enabled.
+  - Applies an auto role when a user verifies, if an only if `setautoroles` is enabled.
+  - Two roles are set: the first is for a user who is a member of the FC, and the second is for the user who is not a member of the FC.
+  - If a user already has these roles when they verify, but they are not a member of the FC then you can enable `/fc allowautoroleremoval` which will allow the bot to enforce the FC auto roles.
+  - Description: Set roles for matching FC ex. inFC:Member, notIn:Guest
+
 - Set Nomination Roles
   - `/server setnomroles`
   - Restricted to server administrators only.
@@ -42,23 +63,19 @@
 
 - Clear Nomination Roles
   - `/server clearnomroles`
-  - Restricted to server administrators only.
   - Description: Clears server roles to rely on when promoting during `/nominate`.
 
 - Set Headpat Roles
   - `/server setheadpatroles`
-  - Restricted to server administrators only.
   - Description: Allows headpat command to know which roles to rely on when assigning based off headpat count. Overwrites existing headpat roles.
 
 - Allow Headpat Roles
   - `/server headpatrolestatus`
-  - Restricted to server administrators only.
   - When false, users can still use `/headpats`
   - Description: Prevents bot from assigning headpat roles when `/headpats` command is ran. Still tracks headpat count. Is enabled by default.
 
 - Server Logs
   - `/log channel`
-  - Restricted to server administrators only.
   - Description: Retrieves the latest 50 logs pertaining to your server, and attempts to export it into a text file before sending it off to the specified text channel. Success response is ephemeral, but the export is visible to all depending on text channel.
  
 ### Nominations
@@ -78,7 +95,7 @@
   - Description: View yours or another user's existing feathers.
 
 - Give Feathers
-  - `/givefeathers category user voicechannel`
+  - `/givefeathers category user` or `/givefeathers category voicechannel`
   - 5 minute cooldown enforced.
   - Description: Recognize server participation or general good heartedness by giving a Chocobo Feather to one or more users.
  
@@ -91,14 +108,28 @@
 - Lodestone Notices on Demand
   - `/lodestone lookup`
   - Description: NA Lodestone news lookups of latest/current. Maintenance lookup assumed.
+
+- List My Characters
+  - `/verify mycharacters`
+  - Description: List your verified characters.
+
+- Verify Help/Guide
+  - `/verify help`
+  - Description: Get help about `/verify` command.
  
 - Verify Character
-  - `/verify characterid`
+  - `/verify characterid` or `/verify charactername datacenter homeworld`
+  - Multiple characters supported.
   - Provided a key for the user to add to their Lodestone profile. Command must be ran again when key is applied to profile.
   - Description: Register the bot with your FFXIV Lodestone character.
+
+- Remove Verified Character from Bot's Database
+  - `/verify removecharacterid`
+  - Removes a character from the bot.
+  - Description: Unverify a character id.
  
 - Character Card
-  - `/whoami characterid user`
+  - `/whoami characterid` or `/whoami user`
   - 5 minute cooldown enforced.
   - User can only be used if that user has verified and registered their character with the bot.
   - Character Id can always be used.
