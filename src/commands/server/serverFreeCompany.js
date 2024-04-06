@@ -1,8 +1,8 @@
 const Guilds = require ('../../statics/guildUtility');
-const AdministrativeAction = require('../../schemas/administrativeAction');
+const AdministrativeAction = require('../../statics/administrativeActionUtility');
 const defaults = require('../../functions/tools/defaults.json');
 const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
-const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -16,7 +16,7 @@ module.exports = {
 		.addBooleanOption(option =>     option.setName("roles").setDescription("See list of free company id related roles to this server."))
         .addBooleanOption(option =>     option.setName("allowautorole").setDescription("Allow auto roles when users /verify."))
         .addStringOption(option =>      option.setName("setautoroles").setDescription("Set roles for matching FC ex. inFC:Member, notIn:Guest"))
-        .addBooleanOption(option =>     option.setName("allowrutoroleremoval").setDescription("Allow removal of fc role if user is not a part of fc"))
+        .addBooleanOption(option =>     option.setName("allowautoroleremoval").setDescription("Allow removal of fc role if user is not a part of fc"))
         .addStringOption(option =>      option.setName("cleanupfcroles").setDescription("Purge users with fc auto role that are not in fc")),
 	async execute(interaction) {
         await interaction.deferReply();
@@ -78,7 +78,7 @@ module.exports = {
                     { name: " ", value: "* FC auto roles are used to verify a Discord user's membership in a registered FC." },
                     { name: " ", value: "- `/fc roles` Lists my current auto role settings." },
                     { name: " ", value: "- `/fc setautoroles` Applies a Discord role, if and only if `/fc allowautorole` is set to true, to a user based on if they are a member or they are not a member." },
-                    { name: " ", value: "- `/fc cleanupfcroles` Removes Discord FC auto roles, if and only if `/fc allowrutoroleremoval` is set to true, to a user who is no longer a part of the FC." }
+                    { name: " ", value: "- `/fc cleanupfcroles` Removes Discord FC auto roles, if and only if `/fc allowautoroleremoval` is set to true, to a user who is no longer a part of the FC." }
                 ],
                 [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
 			);
@@ -131,6 +131,7 @@ module.exports = {
 		//#region Register free company (FC) id
 		if(fcId) {
 			await Guilds.updateFCId(guildProfile.guildId, fcId, "modify");
+			await AdministrativeAction.insertLog(guildProfile.guildId, author.id, "/server addfc", "modified server fc");
 			const EMBED = customEmbedBuilder(
 				"Free Company Lodestone Id saved!"
 			);
@@ -145,6 +146,7 @@ module.exports = {
         const removeFreeCompany         = interaction.options.getString("removefc");
         if(removeFreeCompany && guildProfile && guildProfile.fcIds.includes(removeFreeCompany)) {
             await Guilds.updateFCId(guildProfile.guildId, removeFreeCompany, "remove");
+			await AdministrativeAction.insertLog(guildProfile.guildId, author.id, "/server removefc", "removed server fc");
             const EMBED = customEmbedBuilder(
                 "FC Registry Updated",
                 defaults.CHOCO_WIKI_ICON,
