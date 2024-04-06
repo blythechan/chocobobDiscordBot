@@ -1,11 +1,19 @@
 require("dotenv").config();
 const { DISCORD_TOKEN, DB_TOKEN } = process.env;
 const { connect } = require('mongoose');
-const { Client, Collection, Events, GatewayIntentBits, Partials } = require('discord.js');
+const { Client, Collection, Events, GatewayIntentBits, Partials, ActivityType } = require('discord.js');
 const fs = require('fs');
 const Nominations = require ('./src/statics/nominationsUtility');
 
 const client = new Client({ 
+    presence: {
+        status: 'online',
+        afk: false,
+        activities: [{
+            name: "`/help`",
+            type: "PLAYING",
+        }],
+    },
     intents: [
         GatewayIntentBits.Guilds, 
         GatewayIntentBits.GuildMembers,

@@ -68,7 +68,7 @@ module.exports = {
                     : await Character.findOne({ guildId: interaction.guild._id, memberId: author, characterName: character });
             } else if(user) {
                 lodestoneCharacter = await Character.find({ guildId: interaction.guild._id, memberId: user.id });
-                console.log("Character retrieval:", lodestoneCharacter);
+                if(lodestoneCharacter.length > 0) lodestoneCharacter = lodestoneCharacter[0];
             } else {
                 const CARD_EMBED_ERROR2 = new EmbedBuilder()
                     .setColor(defaults.COLOR)
@@ -105,7 +105,7 @@ module.exports = {
             }
             /** CHEERIO VARS */
 
-            const CHARACTER_ID = lodestoneCharacter 
+            const CHARACTER_ID = lodestoneCharacter !== null
                 ? lodestoneCharacter.characterId
                 : /^\d+$/.test(character)
                     ? character
@@ -355,7 +355,7 @@ module.exports = {
             }
 
             const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'selfportrait.png' });
-            const dataUsage = "\n Powered by FFXIV Collect and Lodestone";
+            const dataUsage = "\n Powered by FFXIV Collect and NA Lodestone";
             CommandAudit.createAudit(guildId, author, "whoami");
             
             await interaction.editReply({ content: ` :mag: Click the card to maximize. ${dataUsage}${collectionsMissing}`, files: [attachment] });
@@ -364,7 +364,8 @@ module.exports = {
             const CARD_EMBED_ERROR3 = new EmbedBuilder()
                 .setColor(defaults.COLOR)
                 .setDescription(`There was an error while retrieving that character's data!`)
-                .setThumbnail(defaults.CHOCO_SAD_ICON);
+                .setThumbnail(defaults.CHOCO_SAD_ICON)
+                .setFooter({ text: "Disclaimer: Only North American Character retrievals and verifications are supported at this time." });
             await interaction.editReply({ embeds: [CARD_EMBED_ERROR3] });
         }
     },

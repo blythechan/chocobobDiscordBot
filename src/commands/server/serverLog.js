@@ -6,14 +6,14 @@ const { SlashCommandBuilder, AttachmentBuilder, PermissionFlagsBits } = require(
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('log')
-        .setDescription('Review the latest 50 server administrative actions. Server Administrators command.')
+        .setDescription('Review the latest 50 server administrative actions')
         .addChannelOption(option => option
             .setName('channel')
             .setDescription('The text channel to send the exported file to')
             .setRequired(true))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction, client) {
-        let guildProfile = await Guilds.findOne({ guildId: interaction.guild.id });
+        const guildProfile = await Guilds.findOne({ guildId: interaction.guild.id });
         if (!guildProfile) {
             return interaction.reply({
                 content: `*Administrative Action.* This command requires that your server be registered with Chocobob. To register, use the ${`/server register`} command.`, ephemeral: true
@@ -27,7 +27,7 @@ module.exports = {
                 let logText = [ "The following text file is a list of the latest 50 actions logged by Chocobob Bot in your server.\n\n" ];
                 logs.map(logIt => {
                     counter++;
-                    logText.push([`${counter}. ${logIt.actionTakenOn} - ${logIt.member.username}#${logIt.member.discriminator} ran the following command ${logIt.command}. **Outcome**: ${logIt.outcome}\n\n`]);
+                    logText.push([`${counter}. ${logIt.createdAt} - ${logIt.memberId} ran the following command ${logIt.command}. **Outcome**: ${logIt.outcome}\n\n`]);
 
                 });
 

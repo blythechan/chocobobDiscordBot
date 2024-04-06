@@ -1,8 +1,11 @@
 const Guilds = require ('../../statics/guildUtility');
-const AdministrativeAction = require('../../schemas/administrativeAction');
+const AdministrativeAction = require('../../statics/administrativeActionUtility');
 const defaults = require('../../functions/tools/defaults.json');
 const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const CommandAudit = require('../../schemas/commandAudit');
+const Nominations = require('../../schemas/nominations');
+const Feathers = require('../../schemas/feathers');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,7 +15,7 @@ module.exports = {
 			.setDescription("Register or De-Register from Chocobob?")
 			.setAutocomplete(true)
 			.setRequired(false))
-		.addStringOption(option => option.setName("freecompanyid")
+		.addStringOption(option => option.setName("addfc")
 			.setDescription("Let Chocobob know your free company's Lodestone id to assist with lookups.")
 			.setRequired(false))
 		.addStringOption(option => option.setName("setnomroles")
@@ -45,17 +48,19 @@ module.exports = {
 	},
 	async execute(interaction) {
 
-        let author = interaction.guild.members.cache.get(interaction.member.id);
+        const author = interaction.guild.members.cache.get(interaction.member.id);
 		const userIsAdmin = author.permissions.has('ADMINISTRATOR');
         if(!userIsAdmin) {
             return interaction.reply({ content: 'Kweh! This command is restricted to server administrators only.', ephemeral: false });
         }
 
+		const GUILD_ID = interaction.guild.id;
+
 		// REGISTER CONFIG
 		const choice = 					interaction.options.getString('register');
 		const status = 					interaction.options.getBoolean('status');
 		// FC THINGS
-		const fcId =					interaction.options.getString("freecompanyid");
+		const fcId =					interaction.options.getString("addfc");
 		// NOMINATE CONFIG
 		const nomsPermissionList = 		interaction.options.getString('setnomroles');
 		const clearnomroles = 			interaction.options.getBoolean('clearnomroles');
@@ -70,7 +75,7 @@ module.exports = {
 
 		//#region Verify if registered
 		// Check if this server is recongized by bot
-		if(choice !== "Register" && !status && !guildProfile) {
+		if(choice !== "Register" && !status && guildProfile === null) {
 			const EMBED = customEmbedBuilder(
 				"Server Not Registered with Chocobo Stall!",
 				defaults.CHOCO_WIKI_ICON,
@@ -90,8 +95,16 @@ module.exports = {
 		//#endregion
 
 		//#region headpat configuration
-		if(headpatrolestatus) {
+		if(headpatrolestatus === true || headpatrolestatus === false) {
 			await Guilds.updateHeadpatRoles(guildProfile, headpatrolestatus);
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server headpatrolesstatus", "modified head pat role status");
+			const EMBED = customEmbedBuilder(
+				`Headpat Roles ${headpatrolestatus ? "Enabled" : "Disabled"}`
+			);
+			return interaction.reply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
 		}
 
 		if(setheadpatroles) {
@@ -101,6 +114,7 @@ module.exports = {
 				return { role:key.trim(), limit:parseInt(value.trim()) };
 			});
 			await Guilds.updateHeadpatRoles(guildProfile, undefined, headpatRoles);
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server setheadpatroles", "modified head pat roles");
 			const EMBED = customEmbedBuilder(
 				"Headpat Roles Created",
 				undefined,
@@ -116,6 +130,7 @@ module.exports = {
 		//#region Register free company (FC) id
 		if(fcId && !choice && !status) {
 			await Guilds.updateFCId(guildProfile.guildId, fcId, "modify");
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server addfc", "modified server fc");
 			const EMBED = customEmbedBuilder(
 				"Free Company Lodestone Id saved!"
 			);
@@ -129,6 +144,7 @@ module.exports = {
 		//#region clear nomination roles
 		if(clearnomroles === true) {
 			await Guilds.updateGuildRegisteredRoles(guildProfile.id, []);
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server clearnomroles", "modified nomination roles");
 			const EMBED = customEmbedBuilder(
 				"Roles cleared for nominations in Chocobo Stall",
 			);
@@ -183,6 +199,7 @@ module.exports = {
 				}
 			}
 			const result = await Guilds.updateGuildRegisteredRoles(guildProfile.id, rolesToRegisterArray);
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server setnomroles", "modified nomination roles");
 			const listRoles = result && result.rolesRegistered.length > 0 
 				? result.rolesRegistered.map(role => role.name)
 				: "*None Registered*";
@@ -214,6 +231,7 @@ module.exports = {
 			});
 
 			const result = await Guilds.updateGuildRegisteredRoles(guildProfile.id, false, existingFeatherRoles);
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server featherroles", "modified feather roles");
 			const listRoles = result && result.featherRolesRegistered.length > 0 
 				? result.featherRolesRegistered.map(role => `${role.cat}: ${role.name}`)
 				: "*None Registered*";
@@ -262,6 +280,7 @@ module.exports = {
 			}
 
 			const result = await Guilds.updateGuildRegisteredRoles(guildProfile.id, false, existingFeatherRoles);
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server featherrolelimit", "modified feather role limit threshold");
 			const listRoles = result && result.featherRolesRegistered.length > 0 
 				? result.featherRolesRegistered.map(role => `${role.cat}: ${role.name}, requires ${role.limit} votes`)
 				: "*None Registered*";
@@ -287,6 +306,7 @@ module.exports = {
 		if (choice === "Register") {
 			if (!guildProfile) { // does not exist
 				await Guilds.registerGuild(interaction.guild);
+				await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server register", "server registered");
 				const EMBED = customEmbedBuilder(
 					"Registered in Chocobo Stall",
 					defaults.CHOCO_WOF_ICON,
@@ -331,8 +351,11 @@ module.exports = {
 					ephemeral: true
 				});
 			} else { // already exists
-				await Guilds.removeGuild(guildId);
-				await AdministrativeAction.deleteMany({ guildId: guildProfile.guildId }).catch(console.error);
+				await Guilds.removeGuild(guildProfile.guildId);
+				await CommandAudit.removeByGuildId(guildProfile.guildId);
+				await Feathers.removeFeathersByGuildId(guildProfile.guildId);
+				await Nominations.removeNominationByGuildId(guildProfile.guildId);
+				await AdministrativeAction.deleteMany({ guildId: guildProfile.guildId });
 				const EMBED = customEmbedBuilder(
 					"De-Registered from Chocobo Stall",
 					defaults.CHOCO_WOF_ICON,

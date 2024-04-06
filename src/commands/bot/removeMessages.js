@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('purge')
-        .setDescription('Removes 100 messages within the last 2 weeks on current text-channel. Server Administrators command.')
+        .setDescription('Removes 100 messages within the last 2 weeks on current text-channel.')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addUserOption(option => option.setName('user').setDescription('The user').setRequired(true))
         .addStringOption(option => option.setName('reason').setDescription('Reason for message purge?')),
@@ -49,29 +49,23 @@ module.exports = {
                         totalPurged = goodbyeMessages.size;
                         return interaction.channel.send(`*Administrative Action.*\n Purged ${goodbyeMessages.size}/100 messages within the last 2 weeks belonging to ${user.username}. ${reason && reason !== "" ? `\n\n**Reason**: ${reason}` : ""}.\n\n${regGuilds ? `Action attempted logging into Chocobo Stall.` : "Administrative Action Logging requires server to be registered with Chocobob's Stall."}`);
                     }).catch(error => {
-                        console.log(`Failed to delete: ${error}`);
+                        console.error(`Failed to delete: ${error}`);
                         return interaction.editReply(failure);
                     });
             }
         }).catch(error => {
             loggedIt = false;
-            console.log(`Failed to delete: ${error}`);
+            console.error(`Failed to delete: ${error}`);
             return interaction.reply(failure);
         });
 
         if (regGuilds && loggedIt) {
             const author = interaction.guild.members.cache.get(interaction.member.id);
             let logAction = await new AdministrativeAction({
-                _id: new mongoose.Types.ObjectId(),
                 guildId: interaction.guild._id,
-                member: {
-                    id: author.user.id,
-                    username: author.user.username,
-                    discriminator: author.user.discriminator
-                },
+                memberId: author.user.id,
                 command: `/purge ${user.username}#${user.discriminator} ${reason}`,
-                outcome: `Purged ${totalPurged}/100 messages belonging to ${user.username}**Reason**: ${reason}`,
-                actionTakenOn: Date().toString(),
+                outcome: `Purged ${totalPurged}/100 messages belonging to ${user.username}**Reason**: ${reason}`
             });
             await logAction.save().catch(console.error);
         }

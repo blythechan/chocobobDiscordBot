@@ -6,16 +6,18 @@ const { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilde
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName("serverfc")
+		.setName("fc")
 		.setDescription("Various server free comapny based commands.")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-		.addStringOption(option =>  option.setName("freecompanyaddid").setDescription("Let Chocobob know your free company's Lodestone id to assist with lookups."))
-		.addStringOption(option =>  option.setName("freecompanyremoveid").setDescription("Remove a registered free company id from the server."))
-		.addBooleanOption(option =>  option.setName("freecompanyregistry").setDescription("See list of free company ids registered to this server."))
-        .addBooleanOption(option => option.setName("allowautorole").setDescription("Allow auto roles when users /verify."))
-        .addStringOption(option =>  option.setName("setautoroles").setDescription("Set roles for matching FC ex. inFC:Member, notIn:Guest"))
-        .addBooleanOption(option => option.setName("allowrutoroleremoval").setDescription("Allow removal of fc role if user is not a part of fc"))
-        .addStringOption(option =>  option.setName("cleanupfcroles").setDescription("Purge users with fc auto role that are not in fc")),
+        .addBooleanOption(option =>     option.setName("help").setDescription("Get information on `/fc` commands"))
+		.addStringOption(option =>      option.setName("addfc").setDescription("Let Chocobob know your free company's Lodestone id to assist with lookups."))
+		.addStringOption(option =>      option.setName("removefc").setDescription("Remove a registered free company id from the server."))
+		.addBooleanOption(option =>     option.setName("registry").setDescription("See list of free company ids registered to this server."))
+		.addBooleanOption(option =>     option.setName("roles").setDescription("See list of free company id related roles to this server."))
+        .addBooleanOption(option =>     option.setName("allowautorole").setDescription("Allow auto roles when users /verify."))
+        .addStringOption(option =>      option.setName("setautoroles").setDescription("Set roles for matching FC ex. inFC:Member, notIn:Guest"))
+        .addBooleanOption(option =>     option.setName("allowrutoroleremoval").setDescription("Allow removal of fc role if user is not a part of fc"))
+        .addStringOption(option =>      option.setName("cleanupfcroles").setDescription("Purge users with fc auto role that are not in fc")),
 	async execute(interaction) {
         await interaction.deferReply();
 
@@ -27,6 +29,11 @@ module.exports = {
         
 		// SERVER DOCUMENT
 		const guildProfile              = await Guilds.findByGuild(interaction.guild.id);
+
+		const fcId					    = interaction.options.getString("addfc");
+        const fcStatus                  = interaction.options.getBoolean("registry");
+        const fcRoles                   = interaction.options.getBoolean("roles");
+
         if(!guildProfile) {
             const EMBED = customEmbedBuilder(
                 "Kweh! This server is not registered with Chocobo Stall. Please run `/server register` command."
@@ -36,53 +43,155 @@ module.exports = {
 				embeds: [EMBED],
                 ephemeral: true
 			});
+        } else if((!fcId && !fcStatus && !fcRoles) && guildProfile.fcIds.length === 0) {
+            const EMBED = customEmbedBuilder(
+                "FC Registry",
+                defaults.CHOCO_SAD_ICON,
+				`Free Company (FC) Ids registered to this server: 0`,
+                [
+                    { name: "FC Commands", value: " " },
+                    { name: " ", value: "- Remove FC: `/fc removefc`"},
+                    { name: " ", value: "- Add FC: `/fc addfc`" },
+                    { name: " ", value: "- See all registered FCs: `/fc registry`" }
+                ]
+			);
+			
+			return interaction.editReply({
+				embeds: [EMBED],
+                ephemeral: true
+			});
         }
 
+        // #region Help
+        const help                      = interaction.options.getBoolean("help");
+        if(help) {
+            const EMBED = customEmbedBuilder(
+				"Free Company (FC) Commands",
+                defaults.CHOCO_WIKI_ICON,
+                undefined,
+                [
+                    { name: "FC Ids", value: " "},
+                    { name: " ", value: "* An FC Id is required for some FFXIV related commands. You can have more than one Free Company Id; however, I will assume that the first FC you give me is your :sparkles:main:sparkles: FC." },
+                    { name: " ", value: "- Don't know what the Id is? Find your FC profile on the Lodestone, and copy the number listed in the URL after */lodestone/freecompany/*." },
+                    { name: " ", value: "- Start with `/fc registry`." },
+                    { name: "Auto Roles", value: " "},
+                    { name: " ", value: "* FC auto roles are used to verify a Discord user's membership in a registered FC." },
+                    { name: " ", value: "- `/fc roles` Lists my current auto role settings." },
+                    { name: " ", value: "- `/fc setautoroles` Applies a Discord role, if and only if `/fc allowautorole` is set to true, to a user based on if they are a member or they are not a member." },
+                    { name: " ", value: "- `/fc cleanupfcroles` Removes Discord FC auto roles, if and only if `/fc allowrutoroleremoval` is set to true, to a user who is no longer a part of the FC." }
+                ],
+                [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
+			);
+			return interaction.editReply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
+        }
+        // #endregion
+
+        // #region List auto role things
+        if(fcRoles) {
+            const registeredAutoRoles = await Guilds.retrieveRoles(guildProfile.guildId);
+            if(registeredAutoRoles) {
+                const verifiedFCer      = registeredAutoRoles.autoFCRoleOnRegister[0] || "[Role Not Assigned]";
+                const affiliatedFCer    = registeredAutoRoles.autoFCRoleOnRegister[1] || "[Role Not Assigned]";
+                const EMBED = customEmbedBuilder(
+                    "FC Roles",
+                    defaults.CHOCO_WIKI_ICON,
+                    "FC roles are applied when a user uses the `/verify` command. You can change the auto roles or prevent me from applying them at any time, kweh!",
+                    [
+                        { name: "Registered FCs", value: registeredAutoRoles.fcIds.join(", ") },
+                        { name: "Auto Roles will apply on verify?", value: registeredAutoRoles.allowFCAutoRoleOnRegister ? "Yes" : "No"},
+                        { name: "Change role next time user runs verify command?", value: registeredAutoRoles.allowRemoveFCRoleOnRegister ? "Yes" : "No"},
+                        { name: "Roles Applied on Verify Command", value: " " },
+                        { name: " ", value: `FC Member: ${verifiedFCer}` },
+                        { name: " ", value: `FC Guest: ${affiliatedFCer}` },
+                    ],
+                    [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
+                );
+                return interaction.editReply({
+                    embeds: [EMBED],
+                    ephemeral: true
+                });
+            } else {
+                const EMBED = customEmbedBuilder(
+                    "Registered FC Roles",
+                    defaults.CHOCO_WIKI_ICON,
+                    "There are 0 registered FC roles"
+                );
+                return interaction.editReply({
+                    embeds: [EMBED],
+                    ephemeral: true
+                });
+            }
+        }
+        //#endregion
+
+        
+		//#region Register free company (FC) id
+		if(fcId) {
+			await Guilds.updateFCId(guildProfile.guildId, fcId, "modify");
+			const EMBED = customEmbedBuilder(
+				"Free Company Lodestone Id saved!"
+			);
+			return interaction.editReply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
+		}
+		//#endregion
+
         // #region FC Removal
-        const removeFreeCompany         = interaction.options.getString("freecompanyremoveid");
+        const removeFreeCompany         = interaction.options.getString("removefc");
         if(removeFreeCompany && guildProfile && guildProfile.fcIds.includes(removeFreeCompany)) {
             await Guilds.updateFCId(guildProfile.guildId, removeFreeCompany, "remove");
             const EMBED = customEmbedBuilder(
                 "FC Registry Updated",
                 defaults.CHOCO_WIKI_ICON,
-				`FC Id of ${removeFreeCompany} was removed from FC Registry`,
+				`Free Company (FC) Id of ${removeFreeCompany} was removed from FC Registry`,
                 [
-                    { name: "Remove FC Id", value: "`/serverfc freecompanyremoveid" },
-                    { name: "Add New FC Id", value: "`/serverfc freecompanyaddid" },
-                    { name: "FC Registry", value: "`/serverfc freecompanyregistry" }
-                ]
+                    { name: "FC Commands", value: " " },
+                    { name: " ", value: "- Remove FC: `/fc removefc`"},
+                    { name: " ", value: "- Add FC: `/fc addfc`" },
+                    { name: " ", value: "- See all registered FCs: `/fc registry`" }
+                ],
+                [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
 			);
 			
 			return interaction.editReply({
 				embeds: [EMBED],
                 ephemeral: true
 			});
-        } else if(guildProfile && guildProfile.fcIds.length > 0) {
+        } else if(removeFreeCompany && guildProfile && guildProfile.fcIds.length > 0) {
             const EMBED = customEmbedBuilder(
                 "FC Not Registered",
                 defaults.CHOCO_WIKI_ICON,
-				`FC Ids registered to this server: ${guildProfile.fcIds.join(", ")}`,
+				`Free Company (FC) Ids registered to this server: ${guildProfile.fcIds.join(", ")}`,
                 [
-                    { name: "Remove FC Id", value: "`/serverfc freecompanyremoveid" },
-                    { name: "Add New FC Id", value: "`/serverfc freecompanyaddid" },
-                    { name: "FC Registry", value: "`/serverfc freecompanyregistry" }
-                ]
+                    { name: "FC Commands", value: " " },
+                    { name: " ", value: "- Remove FC: `/fc removefc`"},
+                    { name: " ", value: "- Add FC: `/fc addfc`" },
+                    { name: " ", value: "- See all registered FCs: `/fc registry`" }
+                ],
+                [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
 			);
 			
 			return interaction.editReply({
 				embeds: [EMBED],
                 ephemeral: true
 			});
-        } else if(guildProfile && guildProfile.fcIds.length === 0) { // FC id not recognized
+        } else if(removeFreeCompany && guildProfile && guildProfile.fcIds.length === 0) { // FC id not recognized
             const EMBED2 = customEmbedBuilder(
                 "FC Registry",
                 defaults.CHOCO_SAD_ICON,
-				`FC Ids registered to this server: 0`,
+				`Free Company (FC) Ids registered to this server: 0`,
                 [
-                    { name: "Remove FC Id", value: "`/serverfc freecompanyremoveid" },
-                    { name: "Add New FC Id", value: "`/serverfc freecompanyaddid" },
-                    { name: "FC Registry", value: "`/serverfc freecompanyregistry" }
-                ]
+                    { name: "FC Commands", value: " " },
+                    { name: " ", value: "- Remove FC: `/fc removefc`"},
+                    { name: " ", value: "- Add FC: `/fc addfc`" },
+                    { name: " ", value: "- See all registered FCs: `/fc registry`" }
+                ],
+                [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
 			);
 			
 			return interaction.editReply({
@@ -93,17 +202,18 @@ module.exports = {
         //#endregion
 
         // #region FC Registry/Status
-        const fcStatus                  = interaction.options.getBoolean("freecompanystatus");
         if(fcStatus && guildProfile && guildProfile.fcIds.length > 0) {
             const EMBED = customEmbedBuilder(
                 "FC Registry",
                 defaults.CHOCO_WIKI_ICON,
-				`FC Ids registered to this server: ${guildProfile.fcIds.join(", ")}`,
+				`Free Company (FC) Ids registered to this server: ${guildProfile.fcIds.join(", ")}`,
                 [
-                    { name: "Remove FC Id", value: "`/serverfc freecompanyremoveid" },
-                    { name: "Add New FC Id", value: "`/serverfc freecompanyaddid" },
-                    { name: "FC Registry", value: "`/serverfc freecompanyregistry" }
-                ]
+                    { name: "FC Commands", value: " " },
+                    { name: " ", value: "- Remove FC: `/fc removefc`"},
+                    { name: " ", value: "- Add FC: `/fc addfc`" },
+                    { name: " ", value: "- See all registered FCs: `/fc registry`" }
+                ],
+                [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
 			);
 			
 			return interaction.editReply({
@@ -114,12 +224,14 @@ module.exports = {
             const EMBED = customEmbedBuilder(
                 "FC Registry",
                 defaults.CHOCO_SAD_ICON,
-				`FC Ids registered to this server: 0`,
+				`Free Company (FC) Ids registered to this server: 0`,
                 [
-                    { name: "Remove FC Id", value: "`/serverfc freecompanyremoveid" },
-                    { name: "Add New FC Id", value: "`/serverfc freecompanyaddid" },
-                    { name: "FC Registry", value: "`/serverfc freecompanyregistry" }
-                ]
+                    { name: "FC Commands", value: " " },
+                    { name: " ", value: "- Remove FC: `/fc removefc`"},
+                    { name: " ", value: "- Add FC: `/fc addfc`" },
+                    { name: " ", value: "- See all registered FCs: `/fc registry`" }
+                ],
+                [ { text: "Disclaimer: Only North American Free Companies and Character retrievals are supported at this time." }]
 			);
 			
 			return interaction.editReply({
@@ -129,38 +241,34 @@ module.exports = {
         }
         // #endregion
 
-
-		const fcId					    = interaction.options.getString("freecompanyaddid");
-        if (!guildProfile.fcIds && !fcId) {
-            const EMBED = customEmbedBuilder(
-                "FC Registry",
-                defaults.CHOCO_SAD_ICON,
-				"Kweh! You must first register a Free Company Id with me via the `/serverfc freecompanyaddid` command."
-			);
+        // if (!guildProfile.fcIds && !fcId) {
+        //     const EMBED = customEmbedBuilder(
+        //         "FC Registry",
+        //         defaults.CHOCO_SAD_ICON,
+		// 		"Kweh! You must first register a Free Company Id with me via the `/fc addfc` command."
+		// 	);
 			
-			return interaction.editReply({
-				embeds: [EMBED],
-                ephemeral: true
-			});
-        } else if (!guildProfile.fcIds.includes(fcId)) {
-            const EMBED = customEmbedBuilder(
-                "FC Registry",
-                defaults.CHOCO_SAD_ICON,
-				"Kweh! I do not recognize that Free Company Id out of the ones that are registered to this server."
-			);
+		// 	return interaction.editReply({
+		// 		embeds: [EMBED],
+        //         ephemeral: true
+		// 	});
+        // } else if (!guildProfile.fcIds.includes(fcId)) {
+        //     const EMBED = customEmbedBuilder(
+        //         "FC Registry",
+        //         defaults.CHOCO_SAD_ICON,
+		// 		"Kweh! I do not recognize that Free Company Id out of the ones that are registered to this server."
+		// 	);
 			
-			return interaction.editReply({
-				embeds: [EMBED],
-                ephemeral: true
-			});
-        }
+		// 	return interaction.editReply({
+		// 		embeds: [EMBED],
+        //         ephemeral: true
+		// 	});
+        // }
 
-		// FC THINGS
+        // #region Auto Roles based on FC
         const allowAutoRole             = interaction.options.getBoolean("allowautorole");
         const setAutoRoles              = interaction.options.getBoolean("setautoroles");
         const allowAutoRoleRemoval      = interaction.options.getBoolean("allowAutoRoleRemoval");
-
-        // #region Auto Roles based on FC
         if(allowAutoRole === true || allowAutoRole === false) {
             await Guilds.allowAutoRole(guildProfile.guildId, allowAutoRole);
             const sayThis = allowAutoRole === true
@@ -181,8 +289,8 @@ module.exports = {
         if(allowAutoRoleRemoval === true || allowAutoRoleRemoval === false) {
             await Guilds.allowRemovalOfAutoRole(guildProfile.guildId, allowAutoRoleRemoval);
             const sayThis = allowAutoRoleRemoval === true
-                ? `I will now remove any auto roles associated to a user who is not a member of the Free Company Id ${guildProfile.fcId} when you run /serverfc cleanupfcroles`
-                : `I will **not** remove any roles when /serverfc cleanupfcroles is ran`;
+                ? `I will now remove any auto roles associated to a user who is not a member of the Free Company Id ${guildProfile.fcId} when you run /fc cleanupfcroles`
+                : `I will **not** remove any roles when /fc cleanupfcroles is ran`;
             const EMBED = customEmbedBuilder(
                 "FC Registry",
                 defaults.CHOCO_WOF_ICON,
@@ -220,18 +328,5 @@ module.exports = {
             });
         }
         // #endregion
-
-		//#region Register free company (FC) id
-		if(fcId) {
-			await Guilds.updateFCId(guildProfile.guildId, fcId, "modify");
-			const EMBED = customEmbedBuilder(
-				"Free Company Lodestone Id saved!"
-			);
-			return interaction.editReply({
-				embeds: [EMBED],
-				ephemeral: true
-			});
-		}
-		//#endregion
 	}
 };
