@@ -41,9 +41,9 @@ module.exports = {
             const guildId =                 interaction.guild.id;
             const guildProfile = 			await Guilds.findByGuild(interaction.guild.id);
             const author =                  interaction.guild.members.cache.get(interaction.member.id);
-            const fc =                      interaction.options.getString('freecompanyid') || guildProfile.fcId;
+            const fc =                      interaction.options.getString('freecompanyid') || guildProfile.fcIds[0];
 
-            if((!fc || fc.trim() === "") && (!guildProfile.fcId || guildProfile.fcId === "")) {
+            if((!fc || fc.trim() === "") && (!guildProfile.fcIds || guildProfile.fcIds.length === 0)) {
                 const EMBED = customEmbedBuilder(
                     "Free Company Lodestone Id was not recognized."
                 );

@@ -167,7 +167,7 @@ module.exports = {
 				await Character.updateOne(lodestoneCharacter).catch(console.error);
 
 				// Give this user a FC role
-				if (autoAssignRole && freeCompanyId === guildProfile.fcId && guildProfile.autoFCRoleOnRegister[0]) {
+				if (autoAssignRole && guildProfile.fcIds.includes(freeCompanyId) && guildProfile.autoFCRoleOnRegister[0]) {
 					const ASSIGN_ROLE = guildProfile.autoFCRoleOnRegister[0];
 					let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
 					if (!role) {
@@ -186,7 +186,7 @@ module.exports = {
 						await guildUser.roles.add(role);
 						roleAdded.push(ASSIGN_ROLE);
 					}
-				} else if (autoAssignRole && freeCompanyId !== guildProfile.fcId && guildProfile.autoFCRoleOnRegister[1]) {
+				} else if (autoAssignRole && !guildProfile.fcIds.includes(freeCompanyId) && guildProfile.autoFCRoleOnRegister[1]) {
 					const ASSIGN_ROLE = guildProfile.autoFCRoleOnRegister[1];
 					let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
 					if (!role) {

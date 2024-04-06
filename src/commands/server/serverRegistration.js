@@ -115,7 +115,7 @@ module.exports = {
 
 		//#region Register free company (FC) id
 		if(fcId && !choice && !status) {
-			await Guilds.updateGuildFreeCompanyId(guildProfile.id, fcId);
+			await Guilds.updateFCId(guildProfile.guildId, fcId, "modify");
 			const EMBED = customEmbedBuilder(
 				"Free Company Lodestone Id saved!"
 			);
