@@ -32,7 +32,6 @@ function checkFeathersLimit(serverFeathers, featherDocument, recentFeatherCat) {
             }
             break;
         case featherCats[2]: // Chaos
-        console.log("here");
             if(chaos && chaos >= featherLimits[2]) {
                 roleName = featherRoles[2];
             }

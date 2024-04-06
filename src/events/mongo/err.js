@@ -2,6 +2,6 @@
 module.exports = {
     name: "err",
     execute() {
-        console.log(`[Database Status] Failure\n${err}`);
+        console.error(`[Database Status] Failure\n${err}`);
     },
 };

@@ -36,7 +36,7 @@ module.exports = {
             case 'lodestoneupdates':
                 const response_updates = await fetch(`https://na.lodestonenews.com/news/updates?limit=1`, requestOptions_limit)
                     .then(response => response.text())
-                    .catch(error => console.log('error', error));
+                    .catch(error => console.error('error', error));
                 const lsu_res = JSON.parse(response_updates);
 
                 let lsu_embed = new EmbedBuilder();
@@ -56,7 +56,7 @@ module.exports = {
             case 'status':
                 const response_status = await fetch(`https://na.lodestonenews.com/news/status?limit=1`, requestOptions_limit)
                     .then(response => response.text())
-                    .catch(error => console.log('error', error));
+                    .catch(error => console.error('error', error));
                 const status_res = JSON.parse(response_status);
 
                 let status_embed = new EmbedBuilder();
@@ -76,7 +76,7 @@ module.exports = {
             case 'maintenance':
                 const response_maintenance = await fetch(`https://na.lodestonenews.com/news/maintenance?limit=1`, requestOptions_limit)
                     .then(response => response.text())
-                    .catch(error => console.log('error', error));
+                    .catch(error => console.error('error', error));
                 const res = JSON.parse(response_maintenance);
                 let maintenance_embed = new EmbedBuilder();
                 const body = res && res.length > 0 ? res[0] : undefined;
@@ -112,7 +112,7 @@ module.exports = {
             case 'notices':
                 const response_notices = await fetch(`https://na.lodestonenews.com/news/notices?limit=1`, requestOptions_limit)
                     .then(response => response.text())
-                    .catch(error => console.log('error', error));
+                    .catch(error => console.error('error', error));
                 const notice_res = JSON.parse(response_notices);
                 let notice_embed = new EmbedBuilder();
                 notice_res.forEach(body => {

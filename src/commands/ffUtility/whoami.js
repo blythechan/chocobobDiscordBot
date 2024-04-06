@@ -37,7 +37,7 @@ module.exports = {
         .setName('whoami')
         .setDescription(`Retrieves a character's data from the Lodestone.`)
         .addStringOption(option => option.setName('characterid').setDescription('Mention a Lodestone character Id').setRequired(false))
-        .addUserOption(option => option.setName('user').setDescription('Mention the Discord user you want to retrieve (retrieves up to 1 character)').setRequired(false)),
+        .addUserOption(option => option.setName('user').setDescription('Mention the Discord user you want to retrieve').setRequired(false)),
     async execute(interaction) {
         try {
 
@@ -67,11 +67,12 @@ module.exports = {
                     ? await Character.findOne({ guildId: interaction.guild._id, memberId: author, characterId: character })
                     : await Character.findOne({ guildId: interaction.guild._id, memberId: author, characterName: character });
             } else if(user) {
-                lodestoneCharacter = await Character.findOne({ guildId: interaction.guild._id, memberId: user.id });
+                lodestoneCharacter = await Character.find({ guildId: interaction.guild._id, memberId: user.id });
+                if(lodestoneCharacter.length > 0) lodestoneCharacter = lodestoneCharacter[0];
             } else {
                 const CARD_EMBED_ERROR2 = new EmbedBuilder()
                     .setColor(defaults.COLOR)
-                    .setDescription(`Kweh! I could not retrieve ${character || user.username} because it is either not registered with me or the information you provided is incorrect. Try searching them up by their character Id.`)
+                    .setDescription(`Kweh! I could not retrieve that character because it is either not registered with me or the information you provided is incorrect. Try searching them up by their character Id.`)
                     .addFields(
                         { name: 'To Register', value: "`/verify server user` and follow the instructions in the DM that I send you." },
                     )
@@ -81,7 +82,6 @@ module.exports = {
             }
 
             let useFFXIVCollect = true;         // Determines if FFXIVCollect API scanned character's data, is set if finalCollect returns 404
-            let finalRes        = undefined;    // Stored data from FFXIVAPI
             let finalCollect    = undefined;    // Stored data from FFXIVCollect API
 
             let characterAC     = undefined;    // Stores Achievements, if public
@@ -105,7 +105,7 @@ module.exports = {
             }
             /** CHEERIO VARS */
 
-            const CHARACTER_ID = lodestoneCharacter 
+            const CHARACTER_ID = lodestoneCharacter !== null
                 ? lodestoneCharacter.characterId
                 : /^\d+$/.test(character)
                     ? character
@@ -164,7 +164,7 @@ module.exports = {
 
                         $('table.character__param__list tbody tr').each((index, element) => {
                             // Get the text from the <th> and <td> elements
-                            const key = $(element).find('th').text().replace("Potency", "").trim();
+                            const key = $(element).find('th').text().replace("Potency", "").replace("Rate", "").trim();
                             const value = $(element).find('td').text().trim();
                             
                             // Push key-value pair to the result array
@@ -355,7 +355,7 @@ module.exports = {
             }
 
             const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'selfportrait.png' });
-            const dataUsage = "\n Powered by FFXIV Collect and Lodestone";
+            const dataUsage = "\n Powered by FFXIV Collect and NA Lodestone";
             CommandAudit.createAudit(guildId, author, "whoami");
             
             await interaction.editReply({ content: ` :mag: Click the card to maximize. ${dataUsage}${collectionsMissing}`, files: [attachment] });
@@ -364,7 +364,8 @@ module.exports = {
             const CARD_EMBED_ERROR3 = new EmbedBuilder()
                 .setColor(defaults.COLOR)
                 .setDescription(`There was an error while retrieving that character's data!`)
-                .setThumbnail(defaults.CHOCO_SAD_ICON);
+                .setThumbnail(defaults.CHOCO_SAD_ICON)
+                .setFooter({ text: "Disclaimer: Only North American Character retrievals and verifications are supported at this time." });
             await interaction.editReply({ embeds: [CARD_EMBED_ERROR3] });
         }
     },

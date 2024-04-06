@@ -33,24 +33,28 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('fcstats')
 		.setDescription('Retrieve FC statistics')
-            .addStringOption(option => option.setName('freecompanyid').setDescription('The Free Company Id to request a stat card for')),
+            .addStringOption(option => option.setName('freecompanyid').setDescription('The Free Company Id to request a stat card for (first fc registered is assumed if left empty)')),
 	async execute(interaction) {
         try {
             await interaction.deferReply();
 
-            const guildId =                 interaction.guild.id;
-            const guildProfile = 			await Guilds.findByGuild(interaction.guild.id);
-            const author =                  interaction.guild.members.cache.get(interaction.member.id);
-            const fc =                      interaction.options.getString('freecompanyid') || guildProfile.fcId;
+            const guildId                   = interaction.guild.id;
+            const guildProfile              = await Guilds.findByGuild(interaction.guild.id);
+            const author                    = interaction.guild.members.cache.get(interaction.member.id);
+            let fc                          = interaction.options.getString('freecompanyid');
 
-            if((!fc || fc.trim() === "") && (!guildProfile.fcId || guildProfile.fcId === "")) {
-                const EMBED = customEmbedBuilder(
-                    "Free Company Lodestone Id was not recognized."
-                );
-                return interaction.editReply({
-                    embeds: [EMBED],
-                    ephemeral: true
-                });
+            if((!fc || fc.trim() === "")) {
+                // Check guild's fcs
+                if(guildProfile && guildProfile.fcIds && guildProfile.fcIds.length > 0) fc = guildProfile.fcIds[0];
+                else {
+                    const EMBED = customEmbedBuilder(
+                        "Free Company Lodestone Id was not recognized."
+                    );
+                    return interaction.editReply({
+                        embeds: [EMBED],
+                        ephemeral: true
+                    });
+                }
             }
             
             // Verify command is past cooldown
@@ -308,7 +312,7 @@ module.exports = {
             }
 
             const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: 'selfportrait.png' });
-            const dataUsage = "\n Powered by Lodestone";
+            const dataUsage = "\n Powered by NA Lodestone";
             CommandAudit.createAudit(guildId, author, "fcstats");
             
             const url = `https://na.finalfantasyxiv.com/lodestone/freecompany/${fc}/`;
@@ -317,7 +321,7 @@ module.exports = {
 
 
         } catch (error) {
-            console.log("Encountered an error during fc retrieval: ", error);
+            console.error("Encountered an error during fc retrieval: ", error);
             await interaction.editReply({ content: "Error", ephemeral: true });
         }
     }

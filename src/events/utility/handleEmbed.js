@@ -43,7 +43,9 @@ function customEmbedBuilder(title, thumbnail, description, fields, footer, url, 
     }
 
     if(footer) {
-        embed.setFooter(footer);
+        footer.map(field => {
+            embed.setFooter(field);
+        });
     }
 
     return embed;

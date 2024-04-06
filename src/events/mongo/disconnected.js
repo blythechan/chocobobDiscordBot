@@ -2,6 +2,6 @@
 module.exports = {
     name: "disconnected",
     execute() {
-        console.log("[Database Status] Disconnected.");
+        console.error("[Database Status] Disconnected.");
     },
 };

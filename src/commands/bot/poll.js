@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const CommandAudit = require('../../statics/commandAuditUtility');
 
 module.exports = {
       data: new SlashCommandBuilder()
@@ -16,6 +17,10 @@ module.exports = {
             const emotec = interaction.options.getString('emotec');
             const emoted = interaction.options.getString('emoted');
             
+            const guildId                   = interaction.guild.id;
+            const author                    = interaction.guild.members.cache.get(interaction.member.id);
+            CommandAudit.createAudit(guildId, author, "poll");
+
             const message = await interaction.reply({
                   content: body,
                   fetchReply: true

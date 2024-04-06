@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('permission')
-        .setDescription('Modify a user role. Server Administrators command.')
+        .setDescription('Modify a user role.')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addUserOption(option => option.setName('user').setDescription('Which user do you want to involve?').setRequired(true))
         .addStringOption(option => option.setName('action').setDescription('Remove/Add a role, Ban, or Kick').setAutocomplete(true).setRequired(false))
