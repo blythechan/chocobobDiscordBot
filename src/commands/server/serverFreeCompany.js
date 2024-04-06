@@ -274,8 +274,8 @@ module.exports = {
         if(allowAutoRole === true || allowAutoRole === false) {
             await Guilds.allowAutoRole(guildProfile.guildId, allowAutoRole);
             const sayThis = allowAutoRole === true
-                ? `I will now apply an auto role to a user who verifies their FFXIV Lodestone account with me based on if they are a part of the registered server Free Company Id ${guildProfile.fcId}`
-                : `I will **not** apply an auto role to a user who verifies their FFXIV Lodestone account with me based on if they are a part of the registered server Free Company Id ${guildProfile.fcId}`;
+                ? `I will now apply an auto role to a user who verifies their FFXIV Lodestone account with me based on if they are a part of the registered server Free Company Id ${guildProfile.fcIds[0]}`
+                : `I will **not** apply an auto role to a user who verifies their FFXIV Lodestone account with me based on if they are a part of the registered server Free Company Id ${guildProfile.fcIds[0]}`;
             const EMBED = customEmbedBuilder(
                 "FC Registry",
                 defaults.CHOCO_WOF_ICON,
@@ -291,7 +291,7 @@ module.exports = {
         if(allowAutoRoleRemoval === true || allowAutoRoleRemoval === false) {
             await Guilds.allowRemovalOfAutoRole(guildProfile.guildId, allowAutoRoleRemoval);
             const sayThis = allowAutoRoleRemoval === true
-                ? `I will now remove any auto roles associated to a user who is not a member of the Free Company Id ${guildProfile.fcId} when you run /fc cleanupfcroles`
+                ? `I will now remove any auto roles associated to a user who is not a member of the Free Company Id ${guildProfile.fcIds[0]} when you run /fc cleanupfcroles`
                 : `I will **not** remove any roles when /fc cleanupfcroles is ran`;
             const EMBED = customEmbedBuilder(
                 "FC Registry",
