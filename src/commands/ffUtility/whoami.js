@@ -164,7 +164,7 @@ module.exports = {
 
                         $('table.character__param__list tbody tr').each((index, element) => {
                             // Get the text from the <th> and <td> elements
-                            const key = $(element).find('th').text().replace("Potency", "").trim();
+                            const key = $(element).find('th').text().replace("Potency", "").replace("Rate", "").trim();
                             const value = $(element).find('td').text().trim();
                             
                             // Push key-value pair to the result array
