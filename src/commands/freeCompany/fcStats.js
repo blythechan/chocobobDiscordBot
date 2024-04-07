@@ -33,7 +33,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('fcstats')
 		.setDescription('Retrieve FC statistics')
-            .addStringOption(option => option.setName('freecompanyid').setDescription('The Free Company Id to request a stat card for (first fc registered is assumed if left empty)')),
+            .addStringOption(option => option.setName('freecompanyid').setDescription('The Free Company Id to request a stat card for (first fc registered is assumed if you enter "1")')),
 	async execute(interaction) {
         try {
             await interaction.deferReply();
@@ -43,7 +43,7 @@ module.exports = {
             const author                    = interaction.guild.members.cache.get(interaction.member.id);
             let fc                          = interaction.options.getString('freecompanyid');
 
-            if((!fc || fc.trim() === "")) {
+            if((!fc || fc.trim() === "" || fc.trim() === "1")) {
                 // Check guild's fcs
                 if(guildProfile && guildProfile.fcIds && guildProfile.fcIds.length > 0) fc = guildProfile.fcIds[0];
                 else {

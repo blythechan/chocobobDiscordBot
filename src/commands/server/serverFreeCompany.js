@@ -269,7 +269,7 @@ module.exports = {
 
         // #region Auto Roles based on FC
         const allowAutoRole             = interaction.options.getBoolean("allowautorole");
-        const setAutoRoles              = interaction.options.getBoolean("setautoroles");
+        const setAutoRoles              = interaction.options.getString("setautoroles");
         const allowAutoRoleRemoval      = interaction.options.getBoolean("allowAutoRoleRemoval");
         if(allowAutoRole === true || allowAutoRole === false) {
             await Guilds.allowAutoRole(guildProfile.guildId, allowAutoRole);

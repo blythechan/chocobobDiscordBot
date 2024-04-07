@@ -3,42 +3,24 @@ const AdministrativeAction = require('../../statics/administrativeActionUtility'
 const defaults = require('../../functions/tools/defaults.json');
 const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
-const CommandAudit = require('../../schemas/commandAudit');
-const Nominations = require('../../schemas/nominations');
-const Feathers = require('../../schemas/feathers');
+const CommandAudit = require('../../statics/commandAuditUtility');
+const Nominations = require('../../statics/nominationsUtility');
+const Feathers = require('../../statics/feathersUtility');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("server")
 		.setDescription("Various server based commands. Retrieve status with /server")
-		.addStringOption(option => option.setName("register")
-			.setDescription("Register or De-Register from Chocobob?")
-			.setAutocomplete(true)
-			.setRequired(false))
-		.addStringOption(option => option.setName("addfc")
-			.setDescription("Let Chocobob know your free company's Lodestone id to assist with lookups.")
-			.setRequired(false))
-		.addStringOption(option => option.setName("setnomroles")
-			.setDescription("To allow `/nominate` to determine server roles, mention the roles you want to register.")
-			.setRequired(false))
-		.addBooleanOption(option => option.setName("clearnomroles")
-			.setDescription("Remove registered roles for `/nomination`.")
-			.setRequired(false))
-		.addStringOption(option => option.setName("featherroles")
-			.setDescription("To allow `/givefeathers` to determine and create server roles per category, ex: CATEGORY:ROLE_NAME.")
-			.setRequired(false))
-		.addStringOption(option => option.setName("featherrolelimit")
-			.setDescription("To allow `/givefeathers` to determine when to give roles, ex: CATEGORY:NUMBER, Gathering:50.")
-			.setRequired(false))
-		.addBooleanOption(option => option.setName("headpatrolesstatus")
-			.setDescription("When false, this prevents the bot from applying roles for headpats. Enabled by default.")
-			.setRequired(false))
-		.addStringOption(option => option.setName("setheadpatroles")
-			.setDescription("Overwrite headpat roles, ex: Certified Headpatter:50, Midas Pets:99999")
-			.setRequired(false))
-		.addBooleanOption(option => option.setName("status")
-			.setDescription("Get the status of your server.")
-			.setRequired(false))
+		.addBooleanOption(option 	=> option.setName("help").setDescription("Get information on `/server` commands"))
+		.addStringOption(option 	=> option.setName("register").setDescription("Register or De-Register from Chocobob?").setAutocomplete(true))
+		.addStringOption(option 	=> option.setName("addfc").setDescription("Let Chocobob know your free company's Lodestone id to assist with lookups."))
+		.addStringOption(option	 	=> option.setName("setnomroles").setDescription("To allow `/nominate` to determine server roles, mention the roles you want to register."))
+		.addBooleanOption(option 	=> option.setName("clearnomroles").setDescription("Remove registered roles for `/nomination`."))
+		.addStringOption(option 	=> option.setName("featherroles").setDescription("To allow `/givefeathers` to determine and create server roles per category, ex: CATEGORY:ROLE_NAME."))
+		.addStringOption(option 	=> option.setName("featherrolelimit").setDescription("To allow `/givefeathers` to determine when to give roles, ex: CATEGORY:NUMBER, Gathering:50."))
+		.addBooleanOption(option 	=> option.setName("headpatrolesstatus").setDescription("When false, this prevents the bot from applying roles for headpats. Enabled by default."))
+		.addStringOption(option 	=> option.setName("setheadpatroles").setDescription("Overwrite headpat roles, ex: Certified Headpatter:50, Midas Pets:99999"))
+		.addBooleanOption(option 	=> option.setName("status").setDescription("Get the status of your server."))
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async autocomplete(interaction) {
 		const focusedOption = interaction.options.getFocused(true);
@@ -53,6 +35,39 @@ module.exports = {
         if(!userIsAdmin) {
             return interaction.reply({ content: 'Kweh! This command is restricted to server administrators only.', ephemeral: false });
         }
+
+		// #region Help
+        const help                      = interaction.options.getBoolean("help");
+        if(help) {
+            const EMBED = customEmbedBuilder(
+				"Server Commands",
+                defaults.CHOCO_WIKI_ICON,
+                undefined,
+                [
+                    { name: "Registration", value: " "},
+                    { name: " ", value: "* Most commands require that the bot is registered with the server." },
+                    { name: " ", value: "- `/server register:Register` This is to verify agreement for the bot to track commands for cooldown and data retrieval purposes on demand" },
+                    { name: " ", value: "- `/server register:Deregister` The bot will clear out all data realted to your server." },
+                    { name: "Nominations", value: " "},
+                    { name: " ", value: "* Nominations allow your server community to nominate others for a promotion to a higher server rank." },
+                    { name: " ", value: "- `/server setnomroles` This sets the specific roles that are available for promotions." },
+                    { name: " ", value: "- `/server clearnomroles` This clears the specific roles that are available for promotions." },
+                    { name: "Feathers", value: " "},
+                    { name: " ", value: "* Feathers are like commendations or kudos." },
+                    { name: " ", value: "- `/server featherroles` This sets the specific roles that are available based on a user's amount of feathers they have." },
+                    { name: " ", value: "- `/server featherrolelimit` This determines the limit at which roles can be awarded (i.e. Thancred's 26th feather awards him the Golden Boi role)." },
+                    { name: "Headpats", value: " "},
+                    { name: " ", value: "* Give someone or the bot a head pat." },
+                    { name: " ", value: "- `/server headpatrolesstatus` When false, this prevents the bot from applying roles for headpats. This is enabled by default." },
+                    { name: " ", value: "- `/server setheadpatroles` This sets roles that can be awarded for the number of headpats a user gives out." },
+                ]
+			);
+			return interaction.reply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
+        }
+        // #endregion
 
 		const GUILD_ID = interaction.guild.id;
 
@@ -81,7 +96,7 @@ module.exports = {
 				defaults.CHOCO_WIKI_ICON,
 				"That command requires that your server is registered with Chocobob's Chocobo Stall.",
 				[
-					{ name: ":red_circle: Not Registered", value: `${guildProfile.registered}` },
+					{ name: ":red_circle: Not Registered", value: " " },
 					{ name: `:notepad_spiral: ${interaction.guild.roles.cache.size} Total Server Roles`, value: " " },
 					{ name: `:people_hugging: ${interaction.guild.memberCount} Total Members`, value: " " },
 					{ name: "`/server` Help", value: "* *Register Server*: `/server register`\n* *Remove registration*: `/server deregister`\n* *Register Roles*: `/server roles`\n* *Remove Registered Roles*: `/server clearnomroles`" },
@@ -181,7 +196,8 @@ module.exports = {
 			);
 
 			return interaction.reply({
-				embeds: [EMBED]
+				embeds: [EMBED],
+				ephemeral: true
 			});
 		}
 		//#endregion
@@ -355,7 +371,7 @@ module.exports = {
 				await CommandAudit.removeByGuildId(guildProfile.guildId);
 				await Feathers.removeFeathersByGuildId(guildProfile.guildId);
 				await Nominations.removeNominationByGuildId(guildProfile.guildId);
-				await AdministrativeAction.deleteMany({ guildId: guildProfile.guildId });
+				await AdministrativeAction.deleteManyByGuildId({ guildId: guildProfile.guildId });
 				const EMBED = customEmbedBuilder(
 					"De-Registered from Chocobo Stall",
 					defaults.CHOCO_WOF_ICON,
