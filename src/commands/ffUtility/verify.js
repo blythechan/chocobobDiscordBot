@@ -19,7 +19,7 @@ module.exports = {
 		.addStringOption(option 	=> option.setName('characterid').setDescription('What is your player Id in Lodestone?'))
 		.addStringOption(option 	=> option.setName('charactername').setDescription('What is the full name of your character?'))
 		.addStringOption(option 	=> option.setName('datacenter').setDescription('What is the data center?').setAutocomplete(true))
-		.addStringOption(option 	=> option.setName('homeworld').setDescription('What is the homeworld?').setAutocomplete(true))
+		.addStringOption(option 	=> option.setName('homeworld').setDescription('What is the homeworld (25 world limit)?').setAutocomplete(true))
 		.setDescription('Register with the FFXIV Lodestone via id OR name, data center, and home world.'),
 	async autocomplete(interaction, client) {
 		const focusedOption = interaction.options.getFocused(true);
@@ -32,10 +32,9 @@ module.exports = {
 
 		if (focusedOption.name === "homeworld") {
 			const datacenterOption = interaction.options.getString('datacenter');
-			if (!datacenterOption) choices = await FFXIVServers.distinct("home_worlds").select("home_worlds");
+			if (!datacenterOption) choices = await FFXIVServers.distinct("home_worlds");
 			else choices = await FFXIVServers.findOne({ data_center: datacenterOption }, { home_worlds: 1 });
-
-			if(choices.home_worlds && choices.home_worlds.length > 25) {
+			if((choices.home_worlds && choices.home_worlds.length > 25) || choices.length > 25) {
 				choices = choices.slice(0, 24);
 			}
 
