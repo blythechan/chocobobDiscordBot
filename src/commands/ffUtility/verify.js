@@ -32,12 +32,18 @@ module.exports = {
 
 		if (focusedOption.name === "homeworld") {
 			const datacenterOption = interaction.options.getString('datacenter');
-			if (!datacenterOption) choices = await FFXIVServers.distinct("home_worlds");
+			if (!datacenterOption) choices = await FFXIVServers.distinct("home_worlds").select("home_worlds");
 			else choices = await FFXIVServers.findOne({ data_center: datacenterOption }, { home_worlds: 1 });
-		}
 
-		const filtered = choices.filter((choice) => choice.startsWith(focusedValue));
-		await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
+			if(choices.home_worlds && choices.home_worlds.length > 25) {
+				choices = choices.slice(0, 24);
+			}
+
+			if(choices._id) {
+				choices = choices.home_worlds;
+			}
+		}
+		await interaction.respond(choices.map((choice) => ({ name: choice, value: choice })));
 	},
 	async execute(interaction) {
 		try {

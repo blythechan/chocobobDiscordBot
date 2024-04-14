@@ -224,7 +224,7 @@ module.exports = {
             context.fillText(tag, 165, 120);
 
             // Formed
-            const formed = `Founded on ${cheerioResults.formed[0]}`;
+            const formed = " ";//`Founded on ${cheerioResults.formed[0]}`;
             context.font = applyText(canvas, formed);
             context.fillStyle = 'WHITE';
             context.fillText(formed, 15, 200);
