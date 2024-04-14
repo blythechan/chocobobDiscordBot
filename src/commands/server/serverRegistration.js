@@ -15,6 +15,7 @@ module.exports = {
 		.addStringOption(option 	=> option.setName("register").setDescription("Register or De-Register from Chocobob?").setAutocomplete(true))
 		.addStringOption(option 	=> option.setName("addfc").setDescription("Let Chocobob know your free company's Lodestone id to assist with lookups."))
 		.addStringOption(option	 	=> option.setName("setnomroles").setDescription("To allow `/nominate` to determine server roles, mention the roles you want to register."))
+		.addStringOption(option 	=> option.setName("nomroleexceptions").setDescription("Prevent users with specific roles to be nominated."))
 		.addBooleanOption(option 	=> option.setName("clearnomroles").setDescription("Remove registered roles for `/nomination`."))
 		.addStringOption(option 	=> option.setName("featherroles").setDescription("To allow `/givefeathers` to determine and create server roles per category, ex: CATEGORY:ROLE_NAME."))
 		.addStringOption(option 	=> option.setName("featherrolelimit").setDescription("To allow `/givefeathers` to determine when to give roles, ex: CATEGORY:NUMBER, Gathering:50."))
@@ -78,6 +79,7 @@ module.exports = {
 		const fcId =					interaction.options.getString("addfc");
 		// NOMINATE CONFIG
 		const nomsPermissionList = 		interaction.options.getString('setnomroles');
+		const nomExceptions =			interaction.options.getString('nomroleexceptions');
 		const clearnomroles = 			interaction.options.getBoolean('clearnomroles');
 		// GIVEFEATHERS CONFIG
 		const featherroles =			interaction.options.getString('featherroles');
@@ -171,39 +173,9 @@ module.exports = {
 		}
 		//#endregion
 
-		//#region Retrieve server status with just `/server`
-		if(status === true || (choice === null && nomsPermissionList === null)) {
-			const listRoles = guildProfile.rolesRegistered.length > 0 
-				? guildProfile.rolesRegistered.map(role => role.name)
-				: "*None Registered*";
-			const listFeatherCats = guildProfile.featherRoles.map(role => `\n**${role.cat}** "${role.role}" assigned if feathers are >= ${role.limit}`)
-			const listHeadpats = guildProfile.allowHeadpatRoles 
-				? guildProfile.headpatRoles.map(role => `\n**${role.role}** assigned if feathers are >= ${role.limit}`)
-				: "Disabled";
-			const EMBED = customEmbedBuilder(
-				"Chocobo Stall Status",
-				defaults.CHOCO_WIKI_ICON,
-				undefined,
-				[
-					{ name: ":green_circle: Registered", value: `${guildProfile.registered}` },
-					{ name: `:notepad_spiral: ${interaction.guild.roles.cache.size} Total Server Roles`, value: " " },
-					{ name: `:people_hugging: ${interaction.guild.memberCount} Total Members`, value: " " },
-					{ name: `:heavy_check_mark: ${guildProfile.rolesRegistered.length} Server Roles for Nominations`, value: `${listRoles || " "}`},
-					{ name: `:heavy_check_mark: ${guildProfile.featherRoles.length} Feather Categories`, value: `${listFeatherCats}`},
-					{ name: `:heavy_check_mark: ${guildProfile.headpatRoles.length} Headpat Roles`, value: `${listHeadpats}`},
-					{ name: "`/server` Help", value: "* *Remove registration*: `/server deregister`\n* *Register Roles*: `/server roles`\n* *Remove Registered Roles*: `/server clearnomroles`\n* *Create server roles per feather category* `/server featherroles`\n* *Role assignment limits for feathers* `/server featherrolelimit`" },
-				]
-			);
-
-			return interaction.reply({
-				embeds: [EMBED],
-				ephemeral: true
-			});
-		}
-		//#endregion
-
 		//#region Register nomination roles `/setnomroles`
 		if(nomsPermissionList) {
+			console.log(nomsPermissionList);
 			const roleIdRegex = /<@&(\d+)>/g;
 			let rolesToRegisterArray = [];
 			let match;
@@ -235,6 +207,38 @@ module.exports = {
 			});
 		}
 		//#endregion
+
+		if(nomExceptions) {
+			const roleIdRegex = /<@&(\d+)>/g;
+			let rolesToRegisterArray = [];
+			let match;
+			while ((match = roleIdRegex.exec(nomExceptions)) !== null) {
+				// Verify this role exists
+				const role = interaction.guild.roles.cache.get(match[1]);
+				if(role) {
+					rolesToRegisterArray.push({ role: role.name });
+				}
+			}
+			const result = await Guilds.updateGuildExceptionRoles(guildProfile.id, rolesToRegisterArray);
+			await AdministrativeAction.insertLog(GUILD_ID, author.id, "/server nomroleexceptions", "modified nomination exception roles");
+			const listRoles = result && result.roleExceptions.length > 0 
+				? result.roleExceptions.map(role => role.role)
+				: "*No Exceptions Registered*";
+			const EMBED = customEmbedBuilder(
+				"Exception Server Roles in Chocobo Stall",
+				defaults.CHOCO_WIKI_ICON,
+				undefined,
+				[
+					{ name: `:heavy_check_mark: ${result ? result.roleExceptions.length : 0} Exception Roles for Nominations`, value: `${listRoles}` },
+					{ name: ":yellow_circle: Purpose", value: `${defaults.DETAIL_TIDBITS[2]}` }				
+				]
+			);
+
+			return interaction.reply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
+		}
 
 		//#region Register give feather roles `/givefeathers`
 		if(featherroles) {
@@ -316,6 +320,43 @@ module.exports = {
 			});
 		}
 		//#endregion
+
+		//#region Retrieve server status with just `/server`
+		if(status === true || (choice === null && nomsPermissionList === null)) {
+			const listRoles = guildProfile.rolesRegistered.length > 0 
+				? guildProfile.rolesRegistered.map(role => role.name)
+				: "*None Registered*";
+			const listExceptionRoles = guildProfile.roleExceptions.length > 0 
+				? guildProfile.roleExceptions.map(role => role.role)
+				: "*None Registered*";
+			const listFeatherCats = guildProfile.featherRoles.map(role => `\n**${role.cat}** "${role.role}" assigned if feathers are >= ${role.limit}`)
+			const listHeadpats = guildProfile.allowHeadpatRoles 
+				? guildProfile.headpatRoles.map(role => `\n**${role.role}** assigned if feathers are >= ${role.limit}`)
+				: "Disabled";
+			const EMBED = customEmbedBuilder(
+				"Chocobo Stall Status",
+				defaults.CHOCO_WIKI_ICON,
+				undefined,
+				[
+					{ name: ":green_circle: Registered", value: `${guildProfile.registered}` },
+					{ name: `:notepad_spiral: ${interaction.guild.roles.cache.size} Total Server Roles`, value: " " },
+					{ name: `:people_hugging: ${interaction.guild.memberCount} Total Members`, value: " " },
+					{ name: `:heavy_check_mark: ${guildProfile.rolesRegistered.length} Server Roles for Nominations`, value: `${listRoles || " "}`},
+					{ name: `:heavy_check_mark: ${guildProfile.roleExceptions.length} Server Roles Excluded for Nominations`, value: `${listExceptionRoles || " "}`},
+					{ name: `:heavy_check_mark: ${guildProfile.featherRoles.length} Feather Categories`, value: `${listFeatherCats}`},
+					{ name: `:heavy_check_mark: ${guildProfile.headpatRoles.length} Headpat Roles`, value: `${listHeadpats}`},
+					{ name: "`/server` Help", value: "* *Remove registration*: `/server deregister`\n* *Register Roles*: `/server roles`\n* *Remove Registered Roles*: `/server clearnomroles`\n* *Create server roles per feather category* `/server featherroles`\n* *Role assignment limits for feathers* `/server featherrolelimit`" },
+				]
+			);
+
+			return interaction.reply({
+				embeds: [EMBED],
+				ephemeral: true
+			});
+		}
+		//#endregion
+
+		
 
 		//#region Register/deregister the server 
 		// REGISTER

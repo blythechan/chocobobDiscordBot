@@ -12,6 +12,7 @@ module.exports = {
 		.addUserOption(option => option.setName('user').setDescription('Which user do you want to nominate?').setRequired(false)),
 	async execute(interaction) {
 		const guildProfile = await Guilds.findByGuild(interaction.guild.id);
+		const guildId = interaction.guild.id;
 
 		let author = interaction.guild.members.cache.get(interaction.member.id);
 		const userIsAdmin = author.permissions.has('ADMINISTRATOR');
@@ -98,6 +99,7 @@ module.exports = {
 		// Retrieve the member's roles
 		const member = interaction.guild.members.cache.get(user.id);
 		const memberRoles = member.roles.cache;
+		const roleExceptions = guildProfile.roleExceptions || [];
 		
 		if(member === nominator) {
 			const CARD_EMBED_NOM_ERR = new EmbedBuilder()
@@ -111,33 +113,69 @@ module.exports = {
 				embeds: [CARD_EMBED_NOM_ERR],
 				ephemeral: true
 			});
+		} else if (roleExceptions && roleExceptions.length > 0) {
+			let exceptionFlag = false;
+			memberRoles.forEach(role => {
+				if(roleExceptions.some(obj => obj.role === role.name)) {
+					exceptionFlag = true;
+					return;
+				}
+			});
+			if(exceptionFlag) {
+				const CARD_EMBED_NOM_ERR = new EmbedBuilder()
+				.setTitle("Nomination Error")
+				.setColor(defaults.COLOR)
+				.addFields(
+					{ name: " ", value: "That user is excluded from nominations due to their server roles." }
+				);
+	
+				return interaction.reply({
+					embeds: [CARD_EMBED_NOM_ERR],
+					ephemeral: true
+				});
+			}
 		}
 
 		// Determine which server roles the user may already have
 		let nextRole = [];
+		let hasRoles = [];
+
 		guildProfile.rolesRegistered.map(role => {
 			let hasRole = memberRoles.has(role.id);
 			if(!hasRole) {
 				nextRole.push(role);
+			} else {
+				hasRoles.push(role);
 			}
 		});
 
-		let targetRole = [];
-		if(nextRole && nextRole.length > 0) {
-			// Determine the next highest
-			const lowestNextRole = nextRole.reduce((minObject, currentObject) => {
-				return currentObject.rawPosition < minObject.rawPosition ? currentObject : minObject;
-			}, nextRole[0]);
+		// Prune roles that they "do not have"
+		if(hasRoles.length > 0 && nextRole.length > 0) {
+			hasRoles.forEach(role => {
+				
+			});
+		}
+
+		// Now verify the true next role
+		// Get the highest rawPosition from hasRole
+		const highestRawPosition = hasRoles.reduce((maxPosition, role) => {
+			return Math.max(maxPosition, role.rawPosition);
+		}, -Infinity);
+
+		// determine highest role based off what user has in array
+		let targetRole = nextRole.filter(role => role.rawPosition > highestRawPosition);
+		let newRole = null;
+		if(targetRole.length > 0) {
 			interaction.guild.roles.cache.forEach(role => {
-				if (role.rawPosition === lowestNextRole.rawPosition) {
-					targetRole = role;
+				if (role.rawPosition === targetRole[0].rawPosition) {
+					newRole = role;
 				}
 			});
 		}
 
-		if(targetRole && targetRole !== null && targetRole.id) {
+		if(newRole && newRole !== null && newRole.id) {
 			// Insert nomination first
-			const result = await Nominations.nominateUser(guildProfile.guildId, nominator.id, user.id, targetRole.name, targetRole.id);
+			const result = await Nominations.nominateUser(guildProfile.guildId, nominator.id, user.id, newRole.name, newRole.id);
 			if(!result || result === null || result === "EXISTS") {
 				const errorMsg = result === "EXISTS"
 					? "I wasn't able to nominate that user due to an active nomination."
@@ -162,7 +200,7 @@ module.exports = {
 				.setTitle("Nominations Vote")
 				.setColor(defaults.COLOR)
 				.setThumbnail(defaults.CHOCO_HAPPY_ICON)
-				.setDescription(`${user} has been nominated by ${nominator} for a promotion to ${targetRole}!`)
+				.setDescription(`${user} has been nominated by ${nominator} for a promotion to ${newRole}!`)
 				.addFields(
 					{ name: " ", value: `Nomination Id: ${result._id}` },
 					{ name: " ", value: `Voting closes on ${result.expires}` },

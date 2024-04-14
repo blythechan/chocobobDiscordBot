@@ -43,7 +43,7 @@ module.exports = {
             const author                    = interaction.guild.members.cache.get(interaction.member.id);
             let fc                          = interaction.options.getString('freecompanyid');
 
-            if((!fc || fc.trim() === "" || fc.trim() === "1")) {
+            if((!fc || fc.trim() === "" || fc.trim() === "1" || fc === null)) {
                 // Check guild's fcs
                 if(guildProfile && guildProfile.fcIds && guildProfile.fcIds.length > 0) fc = guildProfile.fcIds[0];
                 else {

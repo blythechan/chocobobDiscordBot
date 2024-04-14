@@ -23,7 +23,7 @@ module.exports = (client) => {
 
         const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
         const clientId = "1070431418750087342";
-        const guild = "910528126809948201";
+        const guild = "638933686930374687";//"910528126809948201";
 
         // Build the slash commands!
         try {

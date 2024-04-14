@@ -315,7 +315,7 @@ module.exports = {
                 ? result[1]
                 : "[No Roles to Assign]";
             const memberRole = result[0] && result[0] !== null && result[0] !== undefined 
-                ? result[1]
+                ? result[0]
                 : "[No Roles to Assign]";
 
             const EMBED = customEmbedBuilder(
