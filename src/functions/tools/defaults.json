@@ -12,11 +12,12 @@
     ],
     "DEFAULT_RESPONSES": [
         "Kweh? It seems you have already used this command within the past COOLDOWN_LIMIT hours. Please wait until TIMESPAN to use this command again.",
-        "Kweh? Please wait until COOLDOWN_LIMIT minutes have passed before running this command."
+        "Kweh? Please wait until COOLDOWN_LIMIT minute(s) have passed before running this command."
     ],
     "DEFAULT_RESPONSES_KEY": [
         "COMMAND_COOLDOWN_FAIL_12",
-        "COMMAND_COOLDOWN_FAIL_5"
+        "COMMAND_COOLDOWN_FAIL_5",
+        "COMMAND_COOLDOWN_FAIL_1"
     ],
     "FEATHER_CATEGORIES": [
         {

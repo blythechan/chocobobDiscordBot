@@ -18,7 +18,6 @@ module.exports = {
 		const headpatCategory = user && user.id !== defaults.BOT_ID
 			? "user"
 			: "bot";
-		const result = await HeadpatCounter.giveHeadpats(interaction.user.id, headpatCategory);
 		const guildProfile = await Guilds.findByGuild(interaction.guild.id);
 		let author = interaction.guild.members.cache.get(interaction.member.id);
 
@@ -40,9 +39,9 @@ module.exports = {
 
 		// // Verify command is past cooldown
 		if(guildProfile && guildProfile.guildId) {
-			const verifyCooldown = await CommandAudit.checkCooldown(guildProfile.guildId, author, "headpats", "5 minutes");
+			const verifyCooldown = await CommandAudit.checkCooldown(guildProfile.guildId, author, "headpats", "1 minute");
 			if(!verifyCooldown) {
-				const messagecontent = defaults.DEFAULT_RESPONSES[1].replace("COOLDOWN_LIMIT", "5");
+				const messagecontent = defaults.DEFAULT_RESPONSES[1].replace("COOLDOWN_LIMIT", "1");
 				const EMBED = customEmbedBuilder(
 					undefined,
 					defaults.CHOCO_SAD_ICON,
@@ -66,6 +65,11 @@ module.exports = {
 				ephemeral: true
 			});
 		}
+
+		const result = await HeadpatCounter.giveHeadpats(interaction.user.id, headpatCategory, interaction.guild.id);
+		const serverWideHeadpats = await HeadpatCounter.retrieveServerCount(interaction.guild.id);
+		
+		let overallHeadpats = serverWideHeadpats && serverWideHeadpats.length > 0 ? serverWideHeadpats[0].guildWideHeadpats : 0;
 
 		// User is giving the bot headpats
 		if(!user || (user && user.id === defaults.BOT_ID)) {
@@ -102,7 +106,8 @@ module.exports = {
 				defaults.CHOCO_HAPPY_ICON,
 				descStr,
 				[
-					{  name: ' ', value: `Chocobob Headpats: ${countHeadpats}`}
+					{  name: ' ', value: `You have given Chocobob ${countHeadpats} ${countHeadpats > 1 ? "headpats" : "headpat" }`},
+					{  name: ' ', value: `Server-Wide Headpats: ${overallHeadpats}`}
 				]
 			);
 			return interaction.reply({
@@ -144,7 +149,8 @@ module.exports = {
 				defaults.CHOCO_HAPPY_ICON,
 				descStr,
 				[
-					{  name: ' ', value: `User Headpats: ${countHeadpats}`}
+					{  name: ' ', value: `You have given ${countHeadpats} ${countHeadpats > 1 ? "headpats" : "headpat" } to users :heart:`},
+					{  name: ' ', value: `Server-Wide Headpats: ${overallHeadpats}`}
 				]
 			);
 			return interaction.reply({
