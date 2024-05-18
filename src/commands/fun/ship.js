@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 const Canvas = require('@napi-rs/canvas');
+const Guilds = require ('../../statics/guildUtility');
 
 const applyText = (canvas, text) => {
 	const context = canvas.getContext('2d');
@@ -56,8 +57,10 @@ module.exports = {
                 .addUserOption(option => option.setName('shipb').setDescription('Mention the second user').setRequired(true)),
 	async execute(interaction) {
                 try {
-                        const shipA = interaction.options.getUser('shipa');
-                        const shipB = interaction.options.getUser('shipb');
+                        const shipA             = interaction.options.getUser('shipa');
+                        const shipB             = interaction.options.getUser('shipb');
+                        const GUILD_ID          = interaction.guild.id;
+                        const GuildShips        = await Guilds.findUserShips(GUILD_ID, shipA.id.toString(), shipB.id.toString());
                         let matchRate = 0;
                         if((shipB.id === botId || shipA.id === botId)) {
                                 if(shipB.id === botOwnerId || shipA.id === botOwnerId) {
@@ -66,7 +69,19 @@ module.exports = {
                                         matchRate = 0;
                                 }
                         } else {
-                                matchRate = Math.round(Math.random() * 99) + 1;
+                                if(GuildShips && GuildShips.shipRelationships) {
+                                        const above = GuildShips.shipRelationships[0]['shipAbove'];
+                                        const sobelow = GuildShips.shipRelationships[0]['shipBelow'];
+                                        const limiter = above ? 5 : 6;
+                                        const finalNumber = above ? above : sobelow;
+                                        const randomNumber = Math.round(Math.random() * limiter) + 1;
+                                        matchRate = finalNumber + randomNumber;
+                                        if(matchRate > 100) matchRate = 100;
+                                        if(matchRate < 0) matchRate = 0;
+
+                                } else {
+                                        matchRate = Math.round(Math.random() * 99) + 1;
+                                }
                         }
 
                         const canvas = Canvas.createCanvas(880, 350);

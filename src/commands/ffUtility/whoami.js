@@ -177,9 +177,11 @@ module.exports = {
                 finalCollect = await fetch(`https://ffxivcollect.com/api/characters/${CHARACTER_ID}`, requestOptions_limit)
                     .then(response => response.json());
             } else {
+                // character name is setting to undefined
+                const namer = character || user.username;
                 const CARD_EMBED_ERROR3 = new EmbedBuilder()
                     .setColor(defaults.COLOR)
-                    .setDescription(`Kweh! I could not retrieve ${character || user.username} because it is either not registered with me or the information you provided is incorrect. Try searching them up by their character Id.`)
+                    .setDescription(`Kweh! I could not retrieve ${namer || "that character"} because it is either not registered with me or the information you provided is incorrect. Try searching them up by their character Id.`)
                     .addFields(
                         { name: 'To Register', value: "`/verify server user` and follow the instructions in the DM that I send you." },
                     )

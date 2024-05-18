@@ -5,6 +5,7 @@
     "CHOCO_WOF_ICON": "https://www.pngfind.com/pngs/m/171-1710050_final-fantasy-clipart-chocobo-chocobo-world-of-ff.png",
     "CHOCO_WIKI_ICON": "https://cdn.finalfantasywiki.com/b/b1/FFF_Chocobo_Tales_-_Chocobo_art.jpg",
     "CHOCO_HAPPY_ICON": "https://stickershop.line-scdn.net/stickershop/v1/product/1100/LINEStorePC/main.png;compress=true",
+    "CHOCO_STARE_ICON": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.CFIMJuDVsE7z8scSMsuP6QAAAA%26pid%3DApi&f=1&ipt=d7c5af8e3c7991d9cfcfb30986f314770c81d4b5ab658fd50ea749cba07f0c46&ipo=images",
     "DETAIL_TIDBITS": [
         "Registering a server with Chocobob's Stall means that Chocobob can successfully keep track of administrative commands, assist in FFXIV player Lodestone registering, and more. You can remove a server from Chocobob's Stall via the `/server deregister` command. Chocobob **does not** require a server to be registered.",
         "Removing a Discord server from Chocobob's Stall means that any logs or data captured by Chocobob will be removed. No administrative commands, FFXIV player Lodestone registering, or other logs will be saved after this command succeeds. Chocobob **does not** require a Discord server to be registered to continue using its other features.",
