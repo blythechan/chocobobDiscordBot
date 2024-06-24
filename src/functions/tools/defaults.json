@@ -91,5 +91,10 @@
         { "Healer": "https://lds-img.finalfantasyxiv.com/h/A/a8JOc9-8I-ATxTnT3BAkI0MTsA.png" },
         { "Gatherer": "https://lds-img.finalfantasyxiv.com/h/1/7Fd00rEgUDpmWFVulcouYytj54.png" },
         { "DPS": "https://lds-img.finalfantasyxiv.com/h/d/qXomRVXuqEzMLXk2ncLeoFTFYs.png" }
+    ],
+    "SHOW_LOVE_OPS": [
+        "Doubt",
+        "Bonk",
+        "Drink Water"
     ]
 }

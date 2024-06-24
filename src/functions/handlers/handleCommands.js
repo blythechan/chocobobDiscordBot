@@ -23,14 +23,18 @@ module.exports = (client) => {
 
         const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
         const clientId = "1070431418750087342";
-        const guild = "638933686930374687";//"910528126809948201"; 638933686930374687
+        const guilds = ["910528126809948201", "638933686930374687"];
 
         // Build the slash commands!
         try {
             console.log(`Started refreshing ${commandCounter} application (/) commands.`);
 
             // The put method is used to fully refresh all commands in the guild with the current set
-            const data = await rest.put(Routes.applicationGuildCommands(clientId, guild),{ 
+            const data = await rest.put(Routes.applicationGuildCommands(clientId, guilds[0]),{ 
+                body: client.commandArray 
+            });
+
+            await rest.put(Routes.applicationGuildCommands(clientId, guilds[1]),{ 
                 body: client.commandArray 
             });
 

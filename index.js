@@ -10,7 +10,8 @@ const client = new Client({
         status: 'online',
         afk: false,
         activities: [{
-            name: "`/help`",
+            name: "Currently being worked on",
+            //name: "`/help`",
             type: "PLAYING",
         }],
     },

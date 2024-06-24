@@ -56,6 +56,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
         const reactionAuthorId = user.id;
         const messageCommand = reaction.message.interaction && reaction.message.interaction.commandName;
         const messageEmbedTitle = reaction.message.embeds && reaction.message.embeds && reaction.message.embeds[0] ? reaction.message.embeds[0].data.title : "";
+        // #region Nomination reaction
         if(messageCommand === "nominate" && messageEmbedTitle === "Nominations Vote" && messageAuthorIsBot) {
             const messageId = reaction.message.id;
             // Retrieve the nomination
@@ -86,6 +87,7 @@ client.on(Events.MessageReactionAdd, async (reaction, user) => {
                 console.error(`Encountered an error during message reaction for ${messageEmbedTitle}`);
             }
         }
+        // #endregion
     } catch (error) {
         console.error("Encountered an error during message reaction: ", error)
     }
@@ -109,6 +111,7 @@ client.on(Events.MessageReactionRemove, async (reaction, user) => {
         const messageCommand = reaction.message.interaction && reaction.message.interaction.commandName;
         const messageEmbedTitle = reaction.message && reaction.message.embeds && reaction.message.embeds[0] ? reaction.message.embeds[0].data.title : "";
 
+        // #region Nomination vote removed
         if(messageCommand === "nominate" && messageEmbedTitle === "Nominations Vote" && messageAuthorIsBot) {
             const messageId = reaction.message.id;
             const nominationMessage = await Nominations.findByMessageId(messageId);
@@ -118,6 +121,7 @@ client.on(Events.MessageReactionRemove, async (reaction, user) => {
                 console.error(`Encountered an error during message reaction for ${messageEmbedTitle}`);
             }
         }
+        // #endregion
     } catch (error) {
         console.error("Encountered an error during message reaction removal: ", error)
     }

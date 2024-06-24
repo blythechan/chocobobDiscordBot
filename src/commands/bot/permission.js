@@ -21,7 +21,7 @@ module.exports = {
     async execute(interaction, client) {
 
         let author = interaction.guild.members.cache.get(interaction.member.id);
-		const userIsAdmin = author.permissions.has('ADMINISTRATOR');
+		const userIsAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
         if(!userIsAdmin) {
             return interaction.reply({ content: 'Kweh! This command is restricted to server administrators only.', ephemeral: false });
         }

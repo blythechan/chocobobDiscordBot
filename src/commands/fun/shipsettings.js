@@ -14,7 +14,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("shipsettings")
 		.setDescription("Tweak Chocobob's shipping formula")
-        //.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addUserOption(option       => option.setName('shipa').setDescription('Mention the first user').setRequired(true))
         .addUserOption(option       => option.setName('shipb').setDescription('Mention the second user').setRequired(true))
         .addStringOption(option 	=> option.setName("shipalwaysabove").setDescription("Set the ship result to always be above, EX: 80"))

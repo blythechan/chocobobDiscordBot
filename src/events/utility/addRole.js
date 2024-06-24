@@ -1,4 +1,4 @@
-const defaults = require('../../functions/tools/defaults.json');
+const defaults = require("../../functions/tools/defaults.json");
 
 /**
  * Determines the role to provide during auto-assign
@@ -7,89 +7,76 @@ const defaults = require('../../functions/tools/defaults.json');
  * @param {String} recentFeatherCat Obtains the current feather category that is being assigned
  */
 function checkFeathersLimit(serverFeathers, featherDocument, recentFeatherCat) {
-    const featherCats   = [];
-    const featherRoles  = [];
-    const featherLimits = [];
+  const featherCats = [];
+  const featherRoles = [];
+  const newFeatherRoles = [];
+  const featherLimits = [];
 
-    serverFeathers.featherRoles.forEach(cat => {
-        // Store the type of feather (category)
-        featherCats.push(cat.cat);
-    });
+  serverFeathers.featherRoles.forEach((featherData) => {
+    // Store the type of feather (category)
+    featherCats.push(featherData.cat);
+    featherRoles.push(featherData.role); // stores list array of roles
+    featherLimits.push(featherData.limit); // stores the list array of limits
+    newFeatherRoles.push(featherData.roles);
+  });
 
-    const combat        = featherDocument.cat_combat;
-    const crafting      = featherDocument.cat_crafting;
-    const gathering     = featherDocument.cat_gathering;
-    const leadership    = featherDocument.cat_leadership;
-    const dedication    = featherDocument.cat_dedication;
-    const chaos         = featherDocument.cat_chaos;
-    const generosity    = featherDocument.cat_generosity;
+  // Shorthands of user's feathers
+  const combat = featherDocument.cat_combat;
+  const crafting = featherDocument.cat_crafting;
+  const gathering = featherDocument.cat_gathering;
+  const leadership = featherDocument.cat_leadership;
+  const dedication = featherDocument.cat_dedication;
+  const chaos = featherDocument.cat_chaos;
+  const generosity = featherDocument.cat_generosity;
 
+  let roleName = "";
+  switch (recentFeatherCat) {
+    case featherCats[0]: // Combat
+        roleName = getHighestRole(combat, featherLimits[0], featherRoles[0]);
+      break;
+    case featherCats[1]: // Crafting
+        roleName = getHighestRole(crafting, featherLimits[1], featherRoles[1]);
+      break;
+    case featherCats[2]: // Chaos
+        roleName = getHighestRole(chaos, featherLimits[2], featherRoles[2]);
+      break;
+    case featherCats[3]: // Dedication
+        roleName = getHighestRole(dedication, featherLimits[3], featherRoles[3]);
+      break;
+    case featherCats[4]: // Gathering
+        roleName = getHighestRole(gathering, featherLimits[4], featherRoles[4]);
+      break;
+    case featherCats[5]: // Generosity
+        roleName = getHighestRole(generosity, featherLimits[5], featherRoles[5]);
+      break;
+    default: // Leadership
+        roleName = getHighestRole(leadership, featherLimits[6], featherRoles[6]);
+      break;
+  }
 
-    // TO DO: Determine the user's highest role to apply based on cat's limit
-    // Need to capture limit of user's current number of feathers... did that
-    // Now determine the highest limit that they're matching
-
-    let roleName = "";
-    switch(recentFeatherCat) {
-        case featherCats[0]: // Combat
-            if(combat && combat >= featherLimits[0]) {
-                roleName = getHighestRole(combat, serverFeathers.featherRoles, featherCats[0]);
-            }
-            break;
-        case featherCats[1]: // Crafting
-            if(crafting && crafting >= featherLimits[1]) {
-                roleName = getHighestRole(crafting, serverFeathers.featherRoles, featherCats[1]);
-            }
-            break;
-        case featherCats[2]: // Chaos
-            if(chaos && chaos >= featherLimits[2]) {
-                roleName = getHighestRole(chaos, serverFeathers.featherRoles, featherCats[2]);
-            }
-            break;
-        case featherCats[3]: // Dedication
-            if( dedication&& dedication >= featherLimits[3]) {
-                roleName = getHighestRole(dedication, serverFeathers.featherRoles, featherCats[3]);
-            }
-            break;
-        case featherCats[4]: // Gathering
-            if(gathering && gathering >= featherLimits[4]) {
-                roleName = getHighestRole(gathering, serverFeathers.featherRoles, featherCats[4]);
-            }
-            break;
-        case featherCats[5]: // Generosity
-            if(generosity && generosity >= featherLimits[5]) {
-                roleName = getHighestRole(generosity, serverFeathers.featherRoles, featherCats[5]);
-            }
-            break;
-       default:             // Leadership
-            if(leadership && leadership >= featherLimits[6]) {
-                roleName = getHighestRole(leadership, serverFeathers.featherRoles, featherCats[6]);
-            }
-            break;
-    }
-
-    if(roleName === "") {
-        return false;
-    } else {
-        return roleName;
-    }
+  if (roleName === "") {
+    return false;
+  } else {
+    return roleName;
+  }
 }
 
-function getHighestRole(limit, roles, roles) {
-    let highestRole = "";
-    let maxLimit = 0;
-    let limits = roles.limit;
+/**
+ * @param { Number } limit Obtains the user's highest count of feathers for a specific category
+ * @param { Object } roles Obtains the server's feather's roles
+ * @returns The highest role's role name
+ */
+function getHighestRole(userLimit, limits, roles) {
+  let role = false;
 
-    for (let i = 0; i < limits.length; i++) {
-        if(limits[i] <= limit) {
-            if(limits[i] > maxLimit) {
-                maxLimit = limits[i];
-                highestRole = roles[i];
-            }
-        }
+  for (let i = 0; i < limits.length; i++) {
+    if (userLimit >= limits[i]) {
+      role = roles[i];
+    } else {
+      break; // No need to check further if the limit is exceeded
     }
-
-    return highestRole;
+  }
+  return role;
 }
 
 module.exports = { checkFeathersLimit };

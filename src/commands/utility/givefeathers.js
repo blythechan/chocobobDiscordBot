@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ChannelType } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, PermissionFlagsBits } = require('discord.js');
 const Feathers = require ('../../statics/feathersUtility');
 const Guild = require('../../schemas/guilds');
 const CommandAudit = require('../../statics/commandAuditUtility');
@@ -52,13 +52,15 @@ module.exports = {
 			const featherCount = 1;
 			
 			let author = interaction.guild.members.cache.get(interaction.member.id);
-			const userIsAdmin = author.permissions.has('ADMINISTRATOR');
+			const userIsAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+
+			const commandType = `givefeathers ${category}`;
 
 			// // Verify command is past cooldown
-			const verifyCooldown = await CommandAudit.checkCooldown(guildId, sender, "givefeathers", "12 hours");
+			const verifyCooldown = await CommandAudit.checkCooldown(guildId, sender, commandType, "12 hours");
 			if(!verifyCooldown) {
 				if(!userIsAdmin) {
-					const getExpiration = await CommandAudit.retrieveCommandAudit(guildId, "givefeathers", true);
+					const getExpiration = await CommandAudit.retrieveCommandAudit(guildId, commandType, true);
 					const cooldownFinished = new Date(getExpiration.createdAt);
 					cooldownFinished.setHours(cooldownFinished.getHours() + 12);
 					const messagecontent = defaults.DEFAULT_RESPONSES[0].replace("COOLDOWN_LIMIT", "12").replace("TIMESPAN", cooldownFinished);
@@ -122,6 +124,7 @@ module.exports = {
 					}
 					// Get all the members in the voice channel
 					const membersInVoice = voiceChannel.members;
+					console.log("Giving feathers to voice channel of ", membersInVoice.size, " members.");
 					if (membersInVoice.size === 0) {
 						const EMBED = customEmbedBuilder(
 							undefined,
@@ -172,13 +175,15 @@ module.exports = {
 					// Begin auto-role
 					filteredUserIds.map(async (user) => {
 						const userFeathers = await Feathers.findFeathersByGuildMember(guildId, user.id);
-						// ASSIGN ROLE
-						const ASSIGN_ROLE = userFeathers && userFeathers !== null && checkFeathersLimit(regGuild, userFeathers, category);
+						// Retrieves the role that needs to be assigned
+						const ASSIGN_ROLE = (userFeathers && userFeathers !== null) && checkFeathersLimit(guildId, userFeathers, category);
 						// Retrieve all user data
 						const guildUser = interaction.guild.members.cache.get(user.id);
 						if(ASSIGN_ROLE) {
 							try {
 								let role = interaction.guild.roles.cache.find(role => role.name === ASSIGN_ROLE);
+
+								// Create role if it does not yet exist in server
 								if (!role) {
 									role = await interaction.guild.roles.create({
 										name: ASSIGN_ROLE,
@@ -187,6 +192,7 @@ module.exports = {
 										reason: 'Role created automatically by Chocobob'
 									});
 								} 
+								
 								// verify user does not already have this role
 								if(!guildUser.roles.cache.some(r => r.name === ASSIGN_ROLE)) { 
 									const randomTrophy = [
@@ -199,7 +205,8 @@ module.exports = {
 									// Adding the role to the user
 									const member =await interaction.guild.members.fetch(user.id);
 									await member.roles.add(role);
-									await CommandAudit.createAudit(guildId, sender, "givefeathers", `Assigned ${role.name} [${role.id}] to user ${user.id}`);
+									
+									await CommandAudit.createAudit(guildId, sender, commandType, `Assigned ${role.name} [${role.id}] to user ${user.id}`);
 									const EMBED = customEmbedBuilder(
 										"Participation is Cool!",
 										defaults.CHOCO_HAPPY_ICON,
@@ -223,7 +230,8 @@ module.exports = {
 									`KWEH! Something went wrong when trying to auto-assign a role.`
 								);
 								return interaction.reply({
-									embeds: [EMBED]
+									embeds: [EMBED],
+									ephemeral: true
 								});
 							}
 						}
@@ -238,8 +246,7 @@ module.exports = {
 						]
 					);
 					return interaction.reply({
-						embeds: [EMBED],
-						ephemeral: true
+						embeds: [EMBED]
 					});
 
 				} else { // USER MENTION
@@ -258,7 +265,6 @@ module.exports = {
 					}
 
 					const userFeathers = await Feathers.findFeathersByGuildMember(guildId, user.id);
-
 					// ASSIGN ROLE
 					const ASSIGN_ROLE = userFeathers && userFeathers !== null && checkFeathersLimit(regGuild, userFeathers, category);
 					// Retrieve all user data
@@ -286,7 +292,7 @@ module.exports = {
 								// Adding the role to the user
 								const member = await interaction.guild.members.fetch(user.id);
 								await member.roles.add(role);
-								CommandAudit.createAudit(guildId, sender, "givefeathers", `Assigned ${role.name} [${role.id}] to user ${user.id}`);
+								await CommandAudit.createAudit(guildId, sender, commandType, `Assigned ${role.name} [${role.id}] to user ${user.id}`);
 								const EMBED = customEmbedBuilder(
 									"Participation is Cool!",
 									defaults.CHOCO_HAPPY_ICON,
@@ -310,7 +316,8 @@ module.exports = {
 								`KWEH! Something went wrong when trying to auto-assign a role.`
 							);
 							return interaction.reply({
-								embeds: [EMBED]
+								embeds: [EMBED],
+								ephemeral: true
 							});
 						}
 					}

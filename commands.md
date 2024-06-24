@@ -98,6 +98,17 @@
   - `/givefeathers category user` or `/givefeathers category voicechannel`
   - 5 minute cooldown enforced.
   - Description: Recognize server participation or general good heartedness by giving a Chocobo Feather to one or more users.
+
+- Remove User's Feathers
+  - `/featherconfig user`  
+  - Restricted to server administrators only.
+  - Description: Removes all feathers associated with a user, but it will not remove any applied feather roles from a user.
+
+- Change Feather Limit
+  - `/featherconfig setlimit`
+  - Restricted to server administrators only.
+  - Example: Combat:War Lord:34
+  - Description: Changes the necessary feather limit before a user can receive the category's associated role.
  
 ### FFXIV
 - Free Company Stats Card
@@ -136,10 +147,10 @@
   - Description: Retrieves Character information based off the character id provided in the Lodestone.
  
 ### Fun
-- Bonk
-  - `/bonk user`
-  - User can bonk themselves if they do not provide an option.
-  - Description: Bonk someone with your strong hand.
+- Show Love
+  - `/showlove love`
+  - User can bonk, doubt, remind to drink water, and more to themselves or others.
+  - Description: `/showlove love:bonk` someone with your strong hand.
 
 - Headpats
   - `/headpats user`
@@ -148,6 +159,12 @@
   - Will apply aesthetic roles if server headpat roles are allowed and set.
   - Keeps track of bot headpats and user headpats seperately.
   - Description: Praise the bot or another user with a headpat.
+
 - Ship
   - `/ship userA userB`
   - Description: Jokingly displays the probability of compatibility between two users.
+
+- Ship Settings
+  - `/shipsettings shipa shipb shipalwaysbelow` or `/shipsettings shipa shipb shipalwaysabove`
+  - Restricted to server administrators only.
+  - Description: Ensures that a ship will always be below or above a specific number between 0 and 100.
