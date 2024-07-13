@@ -55,7 +55,8 @@ module.exports = {
 			const userIsAdmin = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
 
 			const commandType = `givefeathers ${category}`;
-
+			// if (sender.id !== "139920603711930368")
+			// 	await interaction.reply({ content: "That command is currently down for maintenance, kweh!", ephemeral: true });
 			// // Verify command is past cooldown
 			const verifyCooldown = await CommandAudit.checkCooldown(guildId, sender, commandType, "12 hours");
 			if(!verifyCooldown) {
@@ -68,7 +69,6 @@ module.exports = {
 					return;
 				}
 			}
-
 			// User isn't gifting anyone feathers
 			if(!user && !voiceChannel) {
 				console.error("Invalid action. Missing parameters.");
@@ -82,7 +82,7 @@ module.exports = {
 					embeds: [EMBED],
 					ephemeral: true
 				});
-			} else if (user && user.id === sender) {
+			} else if (user && user.id === sender.id) {
 				console.error("Invalid action. Cannot send to self.");
 				const EMBED = customEmbedBuilder(
 					undefined,
@@ -124,6 +124,8 @@ module.exports = {
 					}
 					// Get all the members in the voice channel
 					const membersInVoice = voiceChannel.members;
+					console.log(voiceChannel);
+					console.log(voiceChannel.members.size);
 					console.log("Giving feathers to voice channel of ", membersInVoice.size, " members.");
 					if (membersInVoice.size === 0) {
 						const EMBED = customEmbedBuilder(
