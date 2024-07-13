@@ -38,12 +38,15 @@ module.exports = {
             "https://tenor.com/view/bonk-shibe-shiba-inu-shiba-great-bonk-shibe-gif-25164188",
             "https://tenor.com/view/bonk-cat-slap-cat-gif-22044106",
             "https://media.tenor.com/ab5hKUJO-kIAAAAM/no-horny-gura.gif",
-            "https://media.tenor.com/8oy_9VcmVvEAAAAM/vorzek-vorzneck.gif",
-            "https://media.tenor.com/Lg3pd1jqNnMAAAAM/horny-bonk.gif",
-            "https://media.tenor.com/4cyL-Pw49p8AAAAM/hornyjail-bonk.gif",
-            "https://media.tenor.com/s25Dqz-8ZlAAAAAM/bonk-no-horny.gif",
-            "https://media.tenor.com/tS1NvL2ExuoAAAAM/ninomae-inanis-takodachi.gif"
+            "https://media.tenor.com/s25Dqz-8ZlAAAAAM/bonk-no-horny.gif"
         ];
+
+        const SPRAY_GIF = [
+            "https://media.tenor.com/4cyL-Pw49p8AAAAM/hornyjail-bonk.gif",
+            "https://media.tenor.com/Lg3pd1jqNnMAAAAM/horny-bonk.gif",
+            "https://media.tenor.com/8oy_9VcmVvEAAAAM/vorzek-vorzneck.gif",
+            "https://media.tenor.com/tS1NvL2ExuoAAAAM/ninomae-inanis-takodachi.gif"
+        ]
 
         const DRINK_GIF = [
             "https://media.tenor.com/4rGualbshuIAAAAj/rascal-water.gif",
@@ -66,7 +69,12 @@ module.exports = {
                 if(user !== interaction.user) message = `**${user}** doubtful just like your existence :heart:\n${DOUBT_GIF[randomIndex]}`;
                 else message = `${DOUBT_GIF[randomIndex]}`;
             break;
-            case defaults.SHOW_LOVE_OPS[2]: // Drink Water
+            case defaults.SHOW_LOVE_OPS[2]: // Horny Bonk
+                randomIndex = Math.floor(Math.random() * SPRAY_GIF.length);
+                if(user !== interaction.user) message = `:clap: **${user}** was just harshly bonked and sent to horny jail! :clap:\n${SPRAY_GIF[randomIndex]}`;
+                else message = `${SPRAY_GIF[randomIndex]}`;
+            break;
+            case defaults.SHOW_LOVE_OPS[3]: // Drink Water
                 randomIndex = Math.floor(Math.random() * DRINK_GIF.length);
                 if(user !== interaction.user) message = `**${user}** drink water. \n${DRINK_GIF[randomIndex]}`;
                 else message = `${DRINK_GIF[randomIndex]}`;
