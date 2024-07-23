@@ -164,7 +164,23 @@ module.exports = {
 
                         $('table.character__param__list tbody tr').each((index, element) => {
                             // Get the text from the <th> and <td> elements
-                            const key = $(element).find('th').text().replace("Potency", "").replace("Rate", "").trim();
+                            const key = $(element).find('th').text().replace(/Potency|Rate|Magic|Defense|vitality|Determination|Attack|Strength|Critical|Dexterity|Intelligence|Speed/gi, (match) => {
+                                const replacements = {
+                                    "Potency": "",
+                                    "Rate": "",
+                                    "Magic": "Mag",
+                                    "Defense": "Def",
+                                    "vitality": "Vit",
+                                    "Determination": "Det",
+                                    "Attack": "Atk",
+                                    "Strength": "Str",
+                                    "Critical": "Crit",
+                                    "Dexterity": "Dex",
+                                    "Intelligence": "Intl",
+                                    "Speed": "Spd"
+                                };
+                                return replacements[match];
+                            }).trim();
                             const value = $(element).find('td').text().trim();
                             
                             // Push key-value pair to the result array
@@ -244,7 +260,7 @@ module.exports = {
                 context.fillStyle = 'WHITE';
                 context.fillText(charAC, 50, 640);
 
-                const charJobs = `Class Jobs: ${Object.keys(cheerioResults.jobClasses).length || "ERROR"} / 31`;
+                const charJobs = `Class Jobs: ${Object.keys(cheerioResults.jobClasses).length || "ERROR"} / 33`;
                 context.font = applySubText(canvas, charJobs);
                 context.fillStyle = 'WHITE';
                 context.fillText(charJobs, 50, 680);

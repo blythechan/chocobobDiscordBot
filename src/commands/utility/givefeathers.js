@@ -124,8 +124,8 @@ module.exports = {
 					}
 					// Get all the members in the voice channel
 					const membersInVoice = voiceChannel.members;
-					console.log(voiceChannel);
-					console.log(voiceChannel.members.size);
+					console.log("voice channel that was selected: ",voiceChannel);
+					console.log("Member size in voice channel:", voiceChannel.members.size);
 					console.log("Giving feathers to voice channel of ", membersInVoice.size, " members.");
 					if (membersInVoice.size === 0) {
 						const EMBED = customEmbedBuilder(

@@ -9,6 +9,7 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds, 
         GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildModeration,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildEmojisAndStickers,
         GatewayIntentBits.GuildPresences,
@@ -18,7 +19,6 @@ const client = new Client({
         GatewayIntentBits.GuildScheduledEvents,
         GatewayIntentBits.AutoModerationConfiguration,
         GatewayIntentBits.GuildMessageReactions,
-        GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildVoiceStates
     ], 
     partials: [Partials.Message, Partials.Channel, Partials.Reaction],

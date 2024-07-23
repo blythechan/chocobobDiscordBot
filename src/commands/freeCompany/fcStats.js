@@ -1,4 +1,4 @@
-const { AttachmentBuilder, SlashCommandBuilder, hideLinkEmbed  } = require("discord.js");
+const { AttachmentBuilder, SlashCommandBuilder, hideLinkEmbed, EmbedBuilder  } = require("discord.js");
 const { customEmbedBuilder } = require('../../events/utility/handleEmbed');
 const axios = require('axios');
 const cheerio = require("cheerio");
@@ -123,7 +123,7 @@ module.exports = {
                         cheerioResults.formed.push(formed);
                     });
 
-                    $('#community > div.ldst__bg > div.ldst__contents.clearfix > div.ldst__main > div:nth-child(1) > p:nth-child(12)').each((idx, element) => {
+                    $('#community > div.ldst__bg > div.ldst__contents.clearfix > div.ldst__main > div:nth-child(1) > p:nth-child(13)').each((idx, element) => {
                         const members = $(element).text();
                         cheerioResults.members.push(members);
                     });
@@ -185,7 +185,7 @@ module.exports = {
 				});
 
             if(cheerioResults.crest.length === 0) {
-                await interaction.editReply({ content: "Error", ephemeral: true });
+                await interaction.editReply({ content: "An error occurred. If this persists and Lodestone is not down, please report this error to discord user *blythechan*.", ephemeral: true });
             }
 
             const canvas = Canvas.createCanvas(2000, 873);
@@ -242,7 +242,7 @@ module.exports = {
             context.fillText(leader, 1300, 200);
 
             // Members
-            const members = `Members: ${cheerioResults.members[0].trim()}/512`;
+            const members = `Members: ${cheerioResults.members[0]}/512`;
             context.font = applyText(canvas, members);
             context.fillStyle = 'WHITE';
             context.fillText(members, 1300, 265);
@@ -322,7 +322,7 @@ module.exports = {
 
         } catch (error) {
             console.error("Encountered an error during fc retrieval: ", error);
-            await interaction.editReply({ content: "Error", ephemeral: true });
+            await interaction.editReply({ content: "An error occurred. If this persists and Lodestone is not down, please report this error to discord user *blythechan*.", ephemeral: true });
         }
     }
 };
