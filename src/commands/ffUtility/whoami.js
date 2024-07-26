@@ -10,6 +10,8 @@ const requestOptions_limit = {
     timeout: 0,
 };
 
+const races = ["Au Ra", "Veira", "Hrothgar", "Hyur", "Lalafell", "Roegadyn", "Elezen", "Miqote", "Miqo'te"];
+
 const applyText = (canvas, text) => {
     const context = canvas.getContext('2d');
     let fontSize = 60;
@@ -132,7 +134,8 @@ module.exports = {
 
                         $('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(1) > div > p.character-block__name').each((idx, element) => {
                             const race = $(element).text();
-                            cheerioResults.race.push(race);
+                            const regex = new RegExp(`(${races.join('|')})(?=[^/]|$)`, 'g');
+                            cheerioResults.race.push(race.replace(regex, '$1 / '));
                         });
                         
                         $('#character > div.character__content.selected > div.character__profile.clearfix > div.character__profile__data > div:nth-child(1) > div > div:nth-child(5) > div.character-block__box > div > h4 > a').each((idx, element) => {
@@ -170,7 +173,7 @@ module.exports = {
                                     "Rate": "",
                                     "Magic": "Mag",
                                     "Defense": "Def",
-                                    "vitality": "Vit",
+                                    "Vitality": "Vit",
                                     "Determination": "Det",
                                     "Attack": "Atk",
                                     "Strength": "Str",
@@ -320,7 +323,7 @@ module.exports = {
                 (cheerioResults.attributes || []).map(obj => {
                     const key = obj.key//Object.keys(obj)[0];
                     const value = obj.value;
-                    attrX = attrX + 400;
+                    attrX = attrX + 300;
                     if (attribute % 2 === 1) {
                         attrY = attrY + 50;
                         attrX = 1300;
